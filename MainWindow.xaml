@@ -3,7 +3,6 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:DOASCalculatorWinUI"
-    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
@@ -18,108 +17,60 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Top Menu Bar -->
         <MenuBar Grid.Row="0" Grid.ColumnSpan="2">
-            <MenuBarItem Title="File">
-                <MenuFlyoutItem Text="Open Project..." Click="OpenProject_Click"/>
-                <MenuFlyoutItem Text="Save Project..." Click="SaveProject_Click"/>
-                <MenuFlyoutSeparator/>
-                <MenuFlyoutItem Text="Export Report (RTF)" Click="ExportRtf_Click"/>
-                <MenuFlyoutSeparator/>
-                <MenuFlyoutItem Text="Exit" Click="Exit_Click"/>
-            </MenuBarItem>
+            <MenuBarItem Title="File"><MenuFlyoutItem Text="Exit" Click="Exit_Click"/></MenuBarItem>
             <MenuBarItem Title="Units">
-                <ToggleMenuFlyoutItem x:Name="MenuSI" Text="SI (Metric)" IsChecked="True" Click="Units_Click"/>
-                <ToggleMenuFlyoutItem x:Name="MenuIP" Text="IP (Imperial)" Click="Units_Click"/>
-            </MenuBarItem>
-            <MenuBarItem Title="Help">
-                <MenuFlyoutItem Text="About DOAS Calculator"/>
+                <ToggleMenuFlyoutItem x:Name="MenuSI" Text="SI" IsChecked="True" Click="Units_Click"/>
+                <ToggleMenuFlyoutItem x:Name="MenuIP" Text="IP" Click="Units_Click"/>
             </MenuBarItem>
         </MenuBar>
 
-        <!-- Left Pane: Inputs -->
-        <Border Grid.Row="1" Grid.Column="0" BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}" BorderThickness="0,0,1,0" Padding="0,0,12,0">
+        <Border Grid.Row="1" Grid.Column="0" BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}" BorderThickness="0,0,1,0">
             <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
                 <StackPanel Spacing="16">
-                    <TextBlock Text="Configuration" Style="{StaticResource TitleTextBlockStyle}" Margin="0,0,0,10"/>
+                    <TextBlock Text="Configuration" Style="{StaticResource TitleTextBlockStyle}"/>
 
-                    <Expander Header="System Mode &amp; Site" IsExpanded="True" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                    <Expander Header="System Mode" IsExpanded="True" HorizontalAlignment="Stretch">
                         <StackPanel Spacing="12">
                             <ComboBox x:Name="CmbSeason" Header="Operation Mode" SelectedIndex="0" SelectionChanged="Input_Changed">
-                                <ComboBoxItem Content="Summer (Cooling)"/>
-                                <ComboBoxItem Content="Winter (Heating)"/>
+                                <ComboBoxItem Content="Summer (Cooling)"/><ComboBoxItem Content="Winter (Heating)"/>
                             </ComboBox>
-                            <StackPanel Spacing="4">
-                                <TextBlock x:Name="LblAlt" Text="Altitude (m)" Style="{StaticResource BodyStrongTextBlockStyle}" FontSize="12"/>
-                                <NumberBox x:Name="NumAltitude" Value="0" SpinButtonPlacementMode="Inline" ValueChanged="Input_Changed"/>
-                            </StackPanel>
+                            <NumberBox x:Name="NumAltitude" Header="Altitude" Value="0" ValueChanged="Input_Changed"/>
                         </StackPanel>
                     </Expander>
 
-                    <Expander Header="Airflows &amp; Conditions" IsExpanded="True" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                    <Expander Header="Airflows" IsExpanded="True" HorizontalAlignment="Stretch">
                         <StackPanel Spacing="12">
-                            <TextBlock Text="Outdoor Air (OA)" Style="{StaticResource BodyStrongTextBlockStyle}"/>
-                            <StackPanel Spacing="4">
-                                <TextBlock x:Name="LblOaFlow" Text="Flow (L/s)" FontSize="12"/>
-                                <NumberBox x:Name="NumOaFlow" Value="1000" ValueChanged="Input_Changed"/>
-                            </StackPanel>
-                            <StackPanel Spacing="4">
-                                <TextBlock x:Name="LblOaDb" Text="Dry Bulb (°C)" FontSize="12"/>
-                                <NumberBox x:Name="NumOaDb" Value="35.0" ValueChanged="Input_Changed"/>
-                            </StackPanel>
-                            <StackPanel Spacing="4">
-                                <TextBlock x:Name="LblOaWb" Text="Wet Bulb (°C)" FontSize="12"/>
-                                <NumberBox x:Name="NumOaWb" Value="28.0" ValueChanged="Input_Changed"/>
-                            </StackPanel>
-                            
-                            <TextBlock Text="Exhaust Air (EA)" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,8,0,0"/>
-                            <StackPanel Spacing="4">
-                                <TextBlock x:Name="LblEaFlow" Text="Flow (L/s)" FontSize="12"/>
-                                <NumberBox x:Name="NumEaFlow" Value="800" ValueChanged="Input_Changed"/>
-                            </StackPanel>
-                            <StackPanel Spacing="4">
-                                <TextBlock x:Name="LblEaDb" Text="Dry Bulb (°C)" FontSize="12"/>
-                                <NumberBox x:Name="NumEaDb" Value="24.0" ValueChanged="Input_Changed"/>
-                            </StackPanel>
-                            <NumberBox x:Name="NumEaRh" Header="Rel. Humidity (%)" Value="50.0" ValueChanged="Input_Changed"/>
+                            <NumberBox x:Name="NumOaFlow" Header="OA Flow" Value="1000" ValueChanged="Input_Changed"/>
+                            <NumberBox x:Name="NumOaDb" Header="OA DB" Value="35.0" ValueChanged="Input_Changed"/>
+                            <NumberBox x:Name="NumOaWb" Header="OA WB" Value="28.0" ValueChanged="Input_Changed"/>
+                            <NumberBox x:Name="NumEaFlow" Header="EA Flow" Value="800" ValueChanged="Input_Changed"/>
+                            <NumberBox x:Name="NumEaDb" Header="EA DB" Value="24.0" ValueChanged="Input_Changed"/>
+                            <NumberBox x:Name="NumEaRh" Header="EA RH (%)" Value="50.0" ValueChanged="Input_Changed"/>
                         </StackPanel>
                     </Expander>
 
-                    <Expander Header="Energy Recovery" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                    <Expander Header="Energy Recovery" HorizontalAlignment="Stretch">
                         <StackPanel Spacing="12">
                             <ToggleSwitch x:Name="TogWheel" Header="Enthalpy Wheel" IsOn="True" Toggled="Input_Changed"/>
-                            <StackPanel Visibility="{x:Bind TogWheel.IsOn, Mode=OneWay}" Spacing="8">
-                                <NumberBox x:Name="NumWheelSens" Header="Sensible Eff (%)" Value="75" ValueChanged="Input_Changed"/>
-                                <NumberBox x:Name="NumWheelLat" Header="Latent Eff (%)" Value="70" ValueChanged="Input_Changed"/>
-                                <CheckBox x:Name="ChkEconomizer" Content="Economizer Mode" IsChecked="True" Click="Input_Changed"/>
-                            </StackPanel>
+                            <NumberBox x:Name="NumWheelSens" Header="Sensible Eff (%)" Value="75" ValueChanged="Input_Changed"/>
+                            <NumberBox x:Name="NumWheelLat" Header="Latent Eff (%)" Value="70" ValueChanged="Input_Changed"/>
+                            <CheckBox x:Name="ChkEconomizer" Content="Economizer Mode" IsChecked="True" Click="Input_Changed"/>
                         </StackPanel>
                     </Expander>
 
-                    <Expander Header="Conditioning" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                    <Expander Header="Conditioning" HorizontalAlignment="Stretch">
                         <StackPanel Spacing="12">
-                            <StackPanel Spacing="4">
-                                <TextBlock x:Name="LblOffCoil" Text="Off-Coil Temp (°C)" FontSize="12"/>
-                                <NumberBox x:Name="NumOffCoil" Value="12.0" ValueChanged="Input_Changed"/>
-                            </StackPanel>
+                            <NumberBox x:Name="NumOffCoil" Header="Off-Coil Temp" Value="12.0" ValueChanged="Input_Changed"/>
                             <ToggleSwitch x:Name="TogReheat" Header="Reheat" IsOn="False" Toggled="Input_Changed"/>
-                            <StackPanel Visibility="{x:Bind TogReheat.IsOn, Mode=OneWay}" Spacing="4">
-                                <TextBlock x:Name="LblSupTemp" Text="Supply Temp (°C)" FontSize="12"/>
-                                <NumberBox x:Name="NumSupplyTemp" Value="20.0" ValueChanged="Input_Changed"/>
-                            </StackPanel>
+                            <NumberBox x:Name="NumSupplyTemp" Header="Supply Temp" Value="20.0" ValueChanged="Input_Changed"/>
                         </StackPanel>
                     </Expander>
 
-                    <Expander Header="Fans" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                    <Expander Header="Fans" HorizontalAlignment="Stretch">
                         <StackPanel Spacing="12">
-                            <StackPanel Spacing="4">
-                                <TextBlock x:Name="LblSupEsp" Text="Supply ESP (Pa)" FontSize="12"/>
-                                <NumberBox x:Name="NumSupEsp" Value="500" ValueChanged="Input_Changed"/>
-                            </StackPanel>
-                            <StackPanel Spacing="4">
-                                <TextBlock x:Name="LblExtEsp" Text="Extract ESP (Pa)" FontSize="12"/>
-                                <NumberBox x:Name="NumExtEsp" Value="500" ValueChanged="Input_Changed"/>
-                            </StackPanel>
+                            <NumberBox x:Name="NumSupEsp" Header="Supply ESP" Value="500" ValueChanged="Input_Changed"/>
+                            <NumberBox x:Name="NumExtEsp" Header="Extract ESP" Value="500" ValueChanged="Input_Changed"/>
                             <NumberBox x:Name="NumFanEff" Header="Fan Eff (%)" Value="60" ValueChanged="Input_Changed"/>
                         </StackPanel>
                     </Expander>
@@ -129,60 +80,37 @@
             </ScrollViewer>
         </Border>
 
-        <!-- Right Pane: Tabs -->
-        <TabView Grid.Row="1" Grid.Column="1" IsAddTabButtonVisible="False" TabCloseButtonOverlayMode="Never">
-            <TabViewItem Header="Performance &amp; Schedule" IsClosable="False">
-                <Grid Padding="20">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
+        <Grid Grid.Row="1" Grid.Column="1" Padding="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-                    <StackPanel Spacing="10" Margin="0,0,0,20">
-                        <TextBlock Text="System Performance" Style="{StaticResource SubtitleTextBlockStyle}"/>
-                        <Grid ColumnDefinitions="*,*,*,*">
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="Cooling" Style="{StaticResource CaptionTextBlockStyle}"/>
-                                <TextBlock x:Name="ResCooling" Text="0.0 kW" Style="{StaticResource TitleTextBlockStyle}" Foreground="SteelBlue"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="1">
-                                <TextBlock Text="Heating" Style="{StaticResource CaptionTextBlockStyle}"/>
-                                <TextBlock x:Name="ResHeating" Text="0.0 kW" Style="{StaticResource TitleTextBlockStyle}" Foreground="OrangeRed"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="Reheat" Style="{StaticResource CaptionTextBlockStyle}"/>
-                                <TextBlock x:Name="ResReheat" Text="0.0 kW" Style="{StaticResource TitleTextBlockStyle}" Foreground="DarkMagenta"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="3">
-                                <TextBlock Text="Fan Power" Style="{StaticResource CaptionTextBlockStyle}"/>
-                                <TextBlock x:Name="ResFanPower" Text="0.0 kW" Style="{StaticResource TitleTextBlockStyle}"/>
-                            </StackPanel>
-                        </Grid>
-                    </StackPanel>
+            <Grid ColumnDefinitions="*,*,*,*" Margin="0,0,0,20">
+                <StackPanel Grid.Column="0"><TextBlock Text="Cooling" Style="{StaticResource CaptionTextBlockStyle}"/><TextBlock x:Name="ResCooling" Text="0.0 kW" Style="{StaticResource TitleTextBlockStyle}" Foreground="SteelBlue"/></StackPanel>
+                <StackPanel Grid.Column="1"><TextBlock Text="Heating" Style="{StaticResource CaptionTextBlockStyle}"/><TextBlock x:Name="ResHeating" Text="0.0 kW" Style="{StaticResource TitleTextBlockStyle}" Foreground="OrangeRed"/></StackPanel>
+                <StackPanel Grid.Column="2"><TextBlock Text="Reheat" Style="{StaticResource CaptionTextBlockStyle}"/><TextBlock x:Name="ResReheat" Text="0.0 kW" Style="{StaticResource TitleTextBlockStyle}" Foreground="DarkMagenta"/></StackPanel>
+                <StackPanel Grid.Column="3"><TextBlock Text="Fan" Style="{StaticResource CaptionTextBlockStyle}"/><TextBlock x:Name="ResFanPower" Text="0.0 kW" Style="{StaticResource TitleTextBlockStyle}"/></StackPanel>
+            </Grid>
 
-                    <controls:DataGrid x:Name="GridSchedule" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" 
-                                       GridLinesVisibility="Horizontal" HeadersVisibility="Column" 
-                                       Background="{ThemeResource LayerFillColorDefaultBrush}">
-                        <controls:DataGrid.Columns>
-                            <controls:DataGridTextColumn Header="#" Binding="{Binding Index}" Width="50"/>
-                            <controls:DataGridTextColumn Header="Component" Binding="{Binding Component}" Width="*"/>
-                            <controls:DataGridTextColumn Header="Entering Air" Binding="{Binding Entering}" Width="2*"/>
-                            <controls:DataGridTextColumn Header="Leaving Air" Binding="{Binding Leaving}" Width="2*"/>
-                        </controls:DataGrid.Columns>
-                    </controls:DataGrid>
+            <Viewbox Grid.Row="1" Stretch="Uniform">
+                <Grid Width="902" Height="652">
+                    <Image x:Name="ImgChart" Source="Images/FlyCarpetPsyChart_SI.png" Stretch="Fill"/>
+                    <Canvas x:Name="ChartCanvas" Width="902" Height="652"/>
                 </Grid>
-            </TabViewItem>
+            </Viewbox>
 
-            <TabViewItem Header="Psychrometric Chart" IsClosable="False">
-                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Padding="20">
-                    <Viewbox Stretch="Uniform">
-                        <Grid Width="902" Height="652">
-                            <Image x:Name="ImgChart" Source="Images/FlyCarpetPsyChart_SI.png" Stretch="Fill"/>
-                            <Canvas x:Name="ChartCanvas" Width="902" Height="652"/>
-                        </Grid>
-                    </Viewbox>
-                </ScrollViewer>
-            </TabViewItem>
-        </TabView>
+            <ListView x:Name="ListSchedule" Grid.Row="2" Height="200" Margin="0,10,0,0">
+                <ListView.Header>
+                    <Grid Padding="8" Background="{ThemeResource LayerFillColorDefaultBrush}"><Grid.ColumnDefinitions><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><TextBlock Text="Component" FontWeight="Bold"/><TextBlock Text="Entering" Grid.Column="1" FontWeight="Bold"/><TextBlock Text="Leaving" Grid.Column="2" FontWeight="Bold"/></Grid>
+                </ListView.Header>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="8"><Grid.ColumnDefinitions><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><TextBlock Text="{Binding Component}"/><TextBlock Text="{Binding Entering}" Grid.Column="1"/><TextBlock Text="{Binding Leaving}" Grid.Column="2"/></Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
     </Grid>
 </Window>

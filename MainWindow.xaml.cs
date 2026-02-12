@@ -1,25 +1,18 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Shapes;
 using Windows.Foundation;
-using Windows.Storage;
-using Windows.Storage.Pickers;
-using WinRT.Interop;
 
 namespace DOASCalculatorWinUI
 {
     public sealed partial class MainWindow : Window
     {
-        private bool _isInternalUpdate = false;
         private bool _isIp = false;
+        private bool _isInternalUpdate = false;
 
         public MainWindow()
         {
@@ -28,24 +21,14 @@ namespace DOASCalculatorWinUI
             Calculate_Click(null, null);
         }
 
-        private void Input_Changed(object sender, RoutedEventArgs e)
-        {
-            if (!_isInternalUpdate) Calculate_Click(null, null);
-        }
-
-        private void Input_Changed(object sender, object e)
-        {
-            if (!_isInternalUpdate) Calculate_Click(null, null);
-        }
+        private void Input_Changed(object sender, object e) => Calculate_Click(null, null);
 
         private void Calculate_Click(object sender, RoutedEventArgs? e)
         {
-            if (CmbSeason == null) return;
+            if (NumOaFlow == null || _isInternalUpdate) return;
 
-            try
-            {
-                var inputs = new SystemInputs
-                {
+            try {
+                var inputs = new SystemInputs {
                     IsHeatingMode = CmbSeason.SelectedIndex == 1,
                     Altitude = _isIp ? Units.FtToM(NumAltitude.Value) : NumAltitude.Value,
                     OaFlow = _isIp ? Units.CfmToLps(NumOaFlow.Value) : NumOaFlow.Value,
@@ -61,56 +44,36 @@ namespace DOASCalculatorWinUI
                     OffCoilTemp = _isIp ? Units.FtoC(NumOffCoil.Value) : NumOffCoil.Value,
                     ReheatEnabled = TogReheat.IsOn,
                     TargetSupplyTemp = _isIp ? Units.FtoC(NumSupplyTemp.Value) : NumSupplyTemp.Value,
-                    SupOaEsp = _isIp ? NumSupEsp.Value / 0.00401463 : NumSupEsp.Value, // Simplified Pa/InWg
+                    SupOaEsp = _isIp ? NumSupEsp.Value / 0.00401463 : NumSupEsp.Value,
                     ExtEaEsp = _isIp ? NumExtEsp.Value / 0.00401463 : NumExtEsp.Value,
                     FanEff = NumFanEff.Value
                 };
 
                 var results = DOASEngine.Process(inputs);
-                UpdateUI(results);
-            }
-            catch { }
-        }
+                
+                if (_isIp) {
+                    ResCooling.Text = $"{Units.KwToMbh(results.TotalCooling):F1} MBH";
+                    ResHeating.Text = $"{Units.KwToMbh(results.TotalHeating):F1} MBH";
+                    ResReheat.Text = $"{Units.KwToMbh(results.ReheatLoad):F1} MBH";
+                    ResFanPower.Text = $"{results.TotalFanPowerKW:F2} kW";
+                } else {
+                    ResCooling.Text = $"{results.TotalCooling:F1} kW";
+                    ResHeating.Text = $"{results.TotalHeating:F1} kW";
+                    ResReheat.Text = $"{results.ReheatLoad:F1} kW";
+                    ResFanPower.Text = $"{results.TotalFanPowerKW:F2} kW";
+                }
+                
+                var schedule = new List<object>();
+                foreach(var s in results.Steps) schedule.Add(new { Component = s.Component, Entering = _isIp ? s.Entering.ToIpString() : s.Entering.ToString(), Leaving = _isIp ? s.Leaving.ToIpString() : s.Leaving.ToString() });
+                ListSchedule.ItemsSource = schedule;
 
-        private void UpdateUI(SystemResults results)
-        {
-            if (_isIp)
-            {
-                ResCooling.Text = $"{Units.KwToMbh(results.TotalCooling):F1} MBH";
-                ResHeating.Text = $"{Units.KwToMbh(results.TotalHeating):F1} MBH";
-                ResReheat.Text = $"{Units.KwToMbh(results.ReheatLoad):F1} MBH";
-                ResFanPower.Text = $"{results.TotalFanPowerKW:F2} kW";
-            }
-            else
-            {
-                ResCooling.Text = $"{results.TotalCooling:F1} kW";
-                ResHeating.Text = $"{results.TotalHeating:F1} kW";
-                ResReheat.Text = $"{results.ReheatLoad:F1} kW";
-                ResFanPower.Text = $"{results.TotalFanPowerKW:F2} kW";
-            }
-
-            // Populate Schedule
-            var scheduleData = new List<object>();
-            for (int i = 0; i < results.Steps.Count; i++)
-            {
-                var step = results.Steps[i];
-                scheduleData.Add(new
-                {
-                    Index = i + 1,
-                    Component = step.Component,
-                    Entering = _isIp ? step.Entering.ToIpString() : step.Entering.ToString(),
-                    Leaving = _isIp ? step.Leaving.ToIpString() : step.Leaving.ToString()
-                });
-            }
-            GridSchedule.ItemsSource = scheduleData;
-
-            DrawChart(results);
+                DrawChart(results);
+            } catch { }
         }
 
         private void DrawChart(SystemResults results)
         {
             ChartCanvas.Children.Clear();
-
             Point Map(double t, double w)
             {
                 double valW = w * 1000.0;
@@ -121,29 +84,14 @@ namespace DOASCalculatorWinUI
                 return new Point(xS, yS);
             }
 
-            Brush[] colors = { 
-                new SolidColorBrush(Microsoft.UI.Colors.Green), 
-                new SolidColorBrush(Microsoft.UI.Colors.Purple), 
-                new SolidColorBrush(Microsoft.UI.Colors.DarkCyan), 
-                new SolidColorBrush(Microsoft.UI.Colors.Blue), 
-                new SolidColorBrush(Microsoft.UI.Colors.Magenta) 
-            };
+            Brush[] colors = { new SolidColorBrush(Microsoft.UI.Colors.Green), new SolidColorBrush(Microsoft.UI.Colors.Purple), new SolidColorBrush(Microsoft.UI.Colors.DarkCyan), new SolidColorBrush(Microsoft.UI.Colors.Blue), new SolidColorBrush(Microsoft.UI.Colors.Magenta) };
 
             for (int i = 0; i < results.Steps.Count; i++)
             {
                 var step = results.Steps[i];
                 var p1 = Map(step.Entering.T, step.Entering.W);
                 var p2 = Map(step.Leaving.T, step.Leaving.W);
-
-                Line line = new Line
-                {
-                    X1 = p1.X, Y1 = p1.Y,
-                    X2 = p2.X, Y2 = p2.Y,
-                    Stroke = colors[i % colors.Length],
-                    StrokeThickness = 3,
-                    StrokeEndLineCap = PenLineCap.Triangle
-                };
-                ChartCanvas.Children.Add(line);
+                ChartCanvas.Children.Add(new Line { X1 = p1.X, Y1 = p1.Y, X2 = p2.X, Y2 = p2.Y, Stroke = colors[i % colors.Length], StrokeThickness = 3, StrokeEndLineCap = PenLineCap.Triangle });
             }
 
             foreach (var pt in results.ChartPoints.Values)
@@ -152,7 +100,6 @@ namespace DOASCalculatorWinUI
                 Ellipse el = new Ellipse { Width = 8, Height = 8, Fill = new SolidColorBrush(Microsoft.UI.Colors.Black) };
                 Canvas.SetLeft(el, p.X - 4); Canvas.SetTop(el, p.Y - 4);
                 ChartCanvas.Children.Add(el);
-                
                 TextBlock tb = new TextBlock { Text = pt.Name, FontSize = 12, FontWeight = Microsoft.UI.Text.FontWeights.Bold };
                 Canvas.SetLeft(tb, p.X + 8); Canvas.SetTop(tb, p.Y - 12);
                 ChartCanvas.Children.Add(tb);
@@ -163,7 +110,6 @@ namespace DOASCalculatorWinUI
         {
             var item = sender as ToggleMenuFlyoutItem;
             if (item == null) return;
-
             bool toIp = item == MenuIP;
             if (_isIp == toIp) { item.IsChecked = true; return; }
 
@@ -172,19 +118,6 @@ namespace DOASCalculatorWinUI
             MenuSI.IsChecked = !toIp;
             MenuIP.IsChecked = toIp;
 
-            // Update Labels
-            LblAlt.Text = toIp ? "Altitude (ft)" : "Altitude (m)";
-            LblOaFlow.Text = toIp ? "Flow (CFM)" : "Flow (L/s)";
-            LblOaDb.Text = toIp ? "Dry Bulb (°F)" : "Dry Bulb (°C)";
-            LblOaWb.Text = toIp ? "Wet Bulb (°F)" : "Wet Bulb (°C)";
-            LblEaFlow.Text = toIp ? "Flow (CFM)" : "Flow (L/s)";
-            LblEaDb.Text = toIp ? "Dry Bulb (°F)" : "Dry Bulb (°C)";
-            LblOffCoil.Text = toIp ? "Off-Coil Temp (°F)" : "Off-Coil Temp (°C)";
-            LblSupTemp.Text = toIp ? "Supply Temp (°F)" : "Supply Temp (°C)";
-            LblSupEsp.Text = toIp ? "Supply ESP (in.wg)" : "Supply ESP (Pa)";
-            LblExtEsp.Text = toIp ? "Extract ESP (in.wg)" : "Extract ESP (Pa)";
-
-            // Convert Values
             NumAltitude.Value = toIp ? Units.MToFt(NumAltitude.Value) : Units.FtToM(NumAltitude.Value);
             NumOaFlow.Value = toIp ? Units.LpsToCfm(NumOaFlow.Value) : Units.CfmToLps(NumOaFlow.Value);
             NumOaDb.Value = toIp ? Units.CtoF(NumOaDb.Value) : Units.FtoC(NumOaDb.Value);
@@ -196,51 +129,23 @@ namespace DOASCalculatorWinUI
             NumSupEsp.Value = toIp ? Units.PaToInWg(NumSupEsp.Value) : Units.InWgToPa(NumSupEsp.Value);
             NumExtEsp.Value = toIp ? Units.PaToInWg(NumExtEsp.Value) : Units.InWgToPa(NumExtEsp.Value);
 
-            ImgChart.Source = new BitmapImage(new Uri(toIp ? "ms-appx:///Images/FlyCarpetPsyChart_IP.png" : "ms-appx:///Images/FlyCarpetPsyChart_SI.png"));
+            NumAltitude.Header = toIp ? "Altitude (ft)" : "Altitude (m)";
+            NumOaFlow.Header = toIp ? "Flow (CFM)" : "Flow (L/s)";
+            NumOaDb.Header = toIp ? "DB (°F)" : "DB (°C)";
+            NumOaWb.Header = toIp ? "WB (°F)" : "WB (°C)";
+            NumEaFlow.Header = toIp ? "Flow (CFM)" : "Flow (L/s)";
+            NumEaDb.Header = toIp ? "DB (°F)" : "DB (°C)";
+            NumOffCoil.Header = toIp ? "Off-Coil (°F)" : "Off-Coil (°C)";
+            NumSupplyTemp.Header = toIp ? "Supply (°F)" : "Supply (°C)";
+            NumSupEsp.Header = toIp ? "Sup ESP (in.wg)" : "Sup ESP (Pa)";
+            NumExtEsp.Header = toIp ? "Ext ESP (in.wg)" : "Ext ESP (Pa)";
+
+            ImgChart.Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri(toIp ? "ms-appx:///Images/FlyCarpetPsyChart_IP.png" : "ms-appx:///Images/FlyCarpetPsyChart_SI.png"));
 
             _isInternalUpdate = false;
             Calculate_Click(null, null);
         }
 
-        private async void OpenProject_Click(object sender, RoutedEventArgs e)
-        {
-            var picker = new FileOpenPicker();
-            SetupPicker(picker);
-            picker.FileTypeFilter.Add(".doas");
-            var file = await picker.PickSingleFileAsync();
-            if (file != null)
-            {
-                // Logic to deserialize and load
-            }
-        }
-
-        private async void SaveProject_Click(object sender, RoutedEventArgs e)
-        {
-            var picker = new FileSavePicker();
-            SetupPicker(picker);
-            picker.FileTypeChoices.Add("DOAS Project", new List<string> { ".doas" });
-            picker.SuggestedFileName = "Project";
-            var file = await picker.PickSaveFileAsync();
-            if (file != null)
-            {
-                // Logic to serialize and save
-            }
-        }
-
-        private void ExportRtf_Click(object sender, RoutedEventArgs e)
-        {
-            // Logic to export RTF
-        }
-
-        private void Exit_Click(object sender, RoutedEventArgs e)
-        {
-            Application.Current.Exit();
-        }
-
-        private void SetupPicker(object obj)
-        {
-            IntPtr windowHandle = WindowNative.GetWindowHandle(this);
-            WinRT.Interop.InitializeWithWindow.Initialize(obj, windowHandle);
-        }
+        private void Exit_Click(object sender, RoutedEventArgs e) => Application.Current.Exit();
     }
 }
