@@ -29,7 +29,7 @@ namespace DOASCalculatorWinUI
 
             try {
                 var inputs = new SystemInputs {
-                    IsHeatingMode = CmbSeason.SelectedIndex == 1,
+                    IsHeatingMode = false,
                     Altitude = _isIp ? Units.FtToM(NumAltitude.Value) : NumAltitude.Value,
                     OaFlow = _isIp ? Units.CfmToLps(NumOaFlow.Value) : NumOaFlow.Value,
                     OaDb = _isIp ? Units.FtoC(NumOaDb.Value) : NumOaDb.Value,
@@ -60,14 +60,12 @@ namespace DOASCalculatorWinUI
                 if (_isIp) {
                     ResCooling.Text = $"{Units.KwToMbh(results.TotalCooling):F1} MBH";
                     ResCoolingBreakdown.Text = $"S: {Units.KwToMbh(results.SensibleCooling):F1} | L: {Units.KwToMbh(results.LatentCooling):F1} MBH";
-                    ResHeating.Text = $"{Units.KwToMbh(results.TotalHeating):F1} MBH";
                     ResReheat.Text = $"{Units.KwToMbh(results.ReheatLoad):F1} MBH";
                     ResFanPower.Text = $"{results.TotalFanPowerKW:F2} kW";
                     ResFanBreakdown.Text = $"S: {results.SupFanPowerKW:F2} | E: {results.ExtFanPowerKW:F2} kW";
                 } else {
                     ResCooling.Text = $"{results.TotalCooling:F1} kW";
                     ResCoolingBreakdown.Text = $"S: {results.SensibleCooling:F1} | L: {results.LatentCooling:F1} kW";
-                    ResHeating.Text = $"{results.TotalHeating:F1} kW";
                     ResReheat.Text = $"{results.ReheatLoad:F1} kW";
                     ResFanPower.Text = $"{results.TotalFanPowerKW:F2} kW";
                     ResFanBreakdown.Text = $"S: {results.SupFanPowerKW:F2} | E: {results.ExtFanPowerKW:F2} kW";
