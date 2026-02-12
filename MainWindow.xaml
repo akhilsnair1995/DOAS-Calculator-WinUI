@@ -95,7 +95,6 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <Grid ColumnDefinitions="*,*,*,*" Margin="0,0,0,20">
@@ -119,14 +118,7 @@
                 </StackPanel>
             </Grid>
 
-            <Viewbox Grid.Row="1" Stretch="Uniform">
-                <Grid Width="902" Height="652">
-                    <Image x:Name="ImgChart" Source="Images/FlyCarpetPsyChart_SI.png" Stretch="Fill"/>
-                    <Canvas x:Name="ChartCanvas" Width="902" Height="652"/>
-                </Grid>
-            </Viewbox>
-
-            <ListView x:Name="ListSchedule" Grid.Row="2" Height="200" Margin="0,10,0,0">
+            <ListView x:Name="ListSchedule" Grid.Row="1" Margin="0,10,0,0">
                 <ListView.Header>
                     <Grid Padding="8" Background="{ThemeResource LayerFillColorDefaultBrush}"><Grid.ColumnDefinitions><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><TextBlock Text="Component" FontWeight="Bold"/><TextBlock Text="Entering" Grid.Column="1" FontWeight="Bold"/><TextBlock Text="Leaving" Grid.Column="2" FontWeight="Bold"/></Grid>
                 </ListView.Header>

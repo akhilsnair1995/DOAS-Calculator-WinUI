@@ -76,62 +76,7 @@ namespace DOASCalculatorWinUI
                 var schedule = new List<object>();
                 foreach(var s in results.Steps) schedule.Add(new { Component = s.Component, Entering = _isIp ? s.Entering.ToIpString() : s.Entering.ToString(), Leaving = _isIp ? s.Leaving.ToIpString() : s.Leaving.ToString() });
                 ListSchedule.ItemsSource = schedule;
-
-                DrawChart(results);
             } catch { }
-        }
-
-        private void DrawChart(SystemResults results)
-        {
-            ChartCanvas.Children.Clear();
-            Point Map(double t, double w)
-            {
-                double valW = w * 1000.0;
-                double y = 590.0 - (valW * 18.0);
-                double x;
-
-                if (_isIp)
-                {
-                    double tf = Units.CtoF(t);
-                    double xBottom = 145.9 + (tf - 30.0) * 7.59;
-                    double slope = -0.0675 + (tf - 30.0) * 0.000709;
-                    x = xBottom + slope * (y - 590.0);
-                }
-                else
-                {
-                    double xBottom = 196.5 + t * 12.65;
-                    double slope = 0.001257 * t - 0.0630;
-                    x = xBottom + slope * (y - 590.0);
-                }
-                return new Point(x, y);
-            }
-
-            Brush[] colors = { 
-                new SolidColorBrush(Microsoft.UI.Colors.Green), 
-                new SolidColorBrush(Microsoft.UI.Colors.Purple), 
-                new SolidColorBrush(Microsoft.UI.Colors.DarkCyan), 
-                new SolidColorBrush(Microsoft.UI.Colors.Blue), 
-                new SolidColorBrush(Microsoft.UI.Colors.Magenta) 
-            };
-
-            for (int i = 0; i < results.Steps.Count; i++)
-            {
-                var step = results.Steps[i];
-                var p1 = Map(step.Entering.T, step.Entering.W);
-                var p2 = Map(step.Leaving.T, step.Leaving.W);
-                ChartCanvas.Children.Add(new Line { X1 = p1.X, Y1 = p1.Y, X2 = p2.X, Y2 = p2.Y, Stroke = colors[i % colors.Length], StrokeThickness = 3, StrokeEndLineCap = PenLineCap.Triangle });
-            }
-
-            foreach (var pt in results.ChartPoints.Values)
-            {
-                var p = Map(pt.T, pt.W);
-                Ellipse el = new Ellipse { Width = 8, Height = 8, Fill = new SolidColorBrush(Microsoft.UI.Colors.Black) };
-                Canvas.SetLeft(el, p.X - 4); Canvas.SetTop(el, p.Y - 4);
-                ChartCanvas.Children.Add(el);
-                TextBlock tb = new TextBlock { Text = pt.Name, FontSize = 12, FontWeight = Microsoft.UI.Text.FontWeights.Bold };
-                Canvas.SetLeft(tb, p.X + 8); Canvas.SetTop(tb, p.Y - 12);
-                ChartCanvas.Children.Add(tb);
-            }
         }
 
         private void Units_Click(object sender, RoutedEventArgs e)
@@ -167,8 +112,6 @@ namespace DOASCalculatorWinUI
             NumSupplyTemp.Header = toIp ? "Supply (°F)" : "Supply (°C)";
             NumSupEsp.Header = toIp ? "Sup ESP (in.wg)" : "Sup ESP (Pa)";
             NumExtEsp.Header = toIp ? "Ext ESP (in.wg)" : "Ext ESP (Pa)";
-
-            ImgChart.Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri(toIp ? "ms-appx:///Images/FlyCarpetPsyChart_IP.png" : "ms-appx:///Images/FlyCarpetPsyChart_SI.png"));
 
             _isInternalUpdate = false;
             Calculate_Click(null, null);
