@@ -7,7 +7,16 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using System.Xml.Serialization;
 using Microsoft.Win32;
+using System.Drawing.Printing;
+using System.Drawing;
+using Color = System.Drawing.Color;
+using Brush = System.Drawing.Brush;
+using Brushes = System.Drawing.Brushes;
+using Pen = System.Drawing.Pen;
+using Pens = System.Drawing.Pens;
+using Point = System.Windows.Point;
 
 namespace DOASCalculatorWinUI
 {
@@ -28,9 +37,14 @@ namespace DOASCalculatorWinUI
             UpdateSeasonUI();
         }
 
+        private void Input_Changed(object sender, RoutedEventArgs e)
+        {
+            if (!_isInternalUpdate) Calculate_Click(null, null);
+        }
+
         private void Calculate_Click(object sender, RoutedEventArgs? e)
         {
-            if (_isInternalUpdate) return;
+            if (_isInternalUpdate || CmbSeason == null) return;
             try
             {
                 var inputs = new SystemInputs
@@ -65,7 +79,7 @@ namespace DOASCalculatorWinUI
                 if (ChkReheat.IsChecked == true) inputs.TargetSupplyTemp = GetVal(TxtSupTemp, "temp");
 
                 _lastResult = DOASEngine.Process(inputs);
-                UpdateResultsUI();
+                UpdateResultsUI(inputs);
             }
             catch { }
         }
@@ -84,7 +98,7 @@ namespace DOASCalculatorWinUI
             };
         }
 
-        private void UpdateResultsUI()
+        private void UpdateResultsUI(SystemInputs inputs)
         {
             if (_lastResult == null) return;
 
@@ -108,6 +122,56 @@ namespace DOASCalculatorWinUI
             LblPower.Text = $"Absorbed: Sup {_lastResult.SupFanPowerKW:F2} / Ext {_lastResult.ExtFanPowerKW:F2} kW\n" +
                            $"Motor Size: Sup {_lastResult.SupMotorKW:F1} / Ext {_lastResult.ExtMotorKW:F1} kW\n" +
                            $"Internal PD: Sup {_lastResult.SupInternalPd:F0} / Ext {_lastResult.ExtInternalPd:F0} Pa";
+
+            // Reheat Source Info
+            if (inputs.ReheatEnabled)
+            {
+                if (CmbReheatType.SelectedIndex == 1) // Water
+                {
+                    double.TryParse(TxtHwEwt.Text, out double ewt); double.TryParse(TxtHwLwt.Text, out double lwt);
+                    double dt = Math.Max(1, Math.Abs(ewt - lwt)) * (_isIp ? 5 / 9.0 : 1);
+                    double flow = _lastResult.ReheatLoad / (4.186 * dt);
+                    LblReheatDesc.Text = _isIp ? $"Water: {(flow * 15.85):F1} GPM" : $"Water: {flow:F2} L/s";
+                }
+                else if (CmbReheatType.SelectedIndex == 2) // Gas
+                {
+                    double.TryParse(TxtGasEff.Text, out double geff);
+                    double flow = (_lastResult.ReheatLoad * 3600) / (46400 * (geff / 100.0));
+                    LblReheatDesc.Text = $"Gas: {flow:F2} kg/hr";
+                }
+                else LblReheatDesc.Text = "Electric Reheat";
+            }
+            else LblReheatDesc.Text = "Reheat Disabled";
+
+            // CHW Flow
+            if (CmbCoilType.SelectedIndex == 1 && _lastResult.TotalCooling > 0)
+            {
+                double.TryParse(TxtCoilDt.Text, out double cdt);
+                if (cdt > 0)
+                {
+                    if (_isIp) {
+                        double gpm = (Units.KwToMbh(_lastResult.TotalCooling) * 2.0) / cdt;
+                        LblChwFlow.Text = $"CHW Flow: {gpm:F2} GPM (ΔT {cdt:F1}°F)";
+                    } else {
+                        double lps = _lastResult.TotalCooling / (4.186 * cdt);
+                        LblChwFlow.Text = $"CHW Flow: {lps:F2} L/s (ΔT {cdt:F1}°C)";
+                    }
+                    LblChwFlow.Visibility = Visibility.Visible;
+                }
+            } else LblChwFlow.Visibility = Visibility.Collapsed;
+
+            // Warnings Logic
+            List<string> warnings = new List<string>();
+            if (ChkDw.IsChecked == true && ChkHp.IsChecked == true) warnings.Add("Warning: Combining Double Wheel and Heat Pipes may be over-engineering.");
+            if (ChkWh.IsChecked == true && inputs.OaFlow > 0.1) {
+                if (inputs.EaFlow / inputs.OaFlow < 0.70) warnings.Add("Warning: Heat recovery not recommended when exhaust air < 70% of fresh air.");
+            }
+            if (inputs.OaFlow > 37756) warnings.Add("Warning: Airflow exceeds 80,000 CFM (Standard models unavailable).");
+
+            if (warnings.Count > 0) {
+                LblWarnText.Text = string.Join("\n", warnings);
+                PnlWarning.Visibility = Visibility.Visible;
+            } else PnlWarning.Visibility = Visibility.Collapsed;
 
             var gridData = new List<object>();
             for (int i = 0; i < _lastResult.Steps.Count; i++)
@@ -140,7 +204,7 @@ namespace DOASCalculatorWinUI
                 return new Point(xS, yS);
             }
 
-            Brush[] brushes = { Brushes.Green, Brushes.Purple, Brushes.DarkCyan, Brushes.Blue, Brushes.Magenta, Brushes.OrangeRed };
+            System.Windows.Media.Brush[] brushes = { System.Windows.Media.Brushes.Green, System.Windows.Media.Brushes.Purple, System.Windows.Media.Brushes.DarkCyan, System.Windows.Media.Brushes.Blue, System.Windows.Media.Brushes.Magenta, System.Windows.Media.Brushes.OrangeRed };
 
             for (int i = 0; i < results.Steps.Count; i++)
             {
@@ -163,7 +227,7 @@ namespace DOASCalculatorWinUI
             foreach (var pt in results.ChartPoints.Values)
             {
                 var p = Map(pt.T, pt.W);
-                Ellipse el = new Ellipse { Width = 8, Height = 8, Fill = Brushes.Black };
+                Ellipse el = new Ellipse { Width = 8, Height = 8, Fill = System.Windows.Media.Brushes.Black };
                 Canvas.SetLeft(el, p.X - 4); Canvas.SetTop(el, p.Y - 4);
                 ChartCanvas.Children.Add(el);
                 TextBlock txt = new TextBlock { Text = pt.Name, FontWeight = FontWeights.Bold, FontSize = 12 };
@@ -217,7 +281,23 @@ namespace DOASCalculatorWinUI
             MenuSI.IsChecked = !toIp;
             MenuIP.IsChecked = toIp;
 
-            // Convert all textboxes with tags
+            // Update Labels
+            LblAltUnit.Text = toIp ? "Altitude (ft)" : "Altitude (m)";
+            LblFlowUnit.Text = toIp ? "Fresh Air (CFM)" : "Fresh Air (L/s)";
+            LblDbUnit.Text = toIp ? "Fresh Air DB (°F)" : "Fresh Air DB (°C)";
+            LblWbUnit.Text = toIp ? "Fresh Air WB (°F)" : "Fresh Air WB (°C)";
+            LblEaFlowUnit.Text = toIp ? "Flow (CFM)" : "Flow (L/s)";
+            LblEaDbUnit.Text = toIp ? "DB (°F)" : "DB (°C)";
+            LblCoilDtUnit.Text = toIp ? "Water Delta T (°F)" : "Water Delta T (°C)";
+            LblOffCoilUnit.Text = toIp ? "Off Coil Temp (°F)" : "Off Coil Temp (°C)";
+            LblSupTempUnit.Text = toIp ? "Target Supply (°F)" : "Target Supply (°C)";
+            LblEwtUnit.Text = toIp ? "Ent. Water (°F)" : "Ent. Water (°C)";
+            LblLwtUnit.Text = toIp ? "Lvg. Water (°F)" : "Lvg. Water (°C)";
+            LblSupEspUnit.Text = toIp ? "Supply ESP (in.wg)" : "Supply ESP (Pa)";
+            LblExtEspUnit.Text = toIp ? "Extract ESP (in.wg)" : "Extract ESP (Pa)";
+            LblDxEffUnit.Text = toIp ? "DX Eff. (EER)" : "DX Eff. (COP)";
+
+            // Convert all textboxes
             foreach (var tb in FindVisualChildren<TextBox>(this))
             {
                 if (tb.Tag is string tag && double.TryParse(tb.Text, out double val))
@@ -246,7 +326,7 @@ namespace DOASCalculatorWinUI
 
         private void SaveProject_Click(object sender, RoutedEventArgs e)
         {
-            var sfd = new SaveFileDialog { Filter = "DOAS Project (*.json)|*.json" };
+            var sfd = new SaveFileDialog { Filter = "DOAS Project|*.doas", FileName = "Project.doas" };
             if (sfd.ShowDialog() == true)
             {
                 var data = new ProjectData {
@@ -263,35 +343,97 @@ namespace DOASCalculatorWinUI
                     SupOaEsp = TxtSupEsp.Text, ExtEaEsp = TxtExtEsp.Text, FanEff = TxtFanEff.Text, DxEff = TxtDxEff.Text,
                     IsIpUnits = _isIp
                 };
-                File.WriteAllText(sfd.FileName, JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true }));
+                try {
+                    var xs = new XmlSerializer(typeof(ProjectData));
+                    using var sw = new StreamWriter(sfd.FileName);
+                    xs.Serialize(sw, data);
+                    MessageBox.Show("Project saved successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                } catch (Exception ex) { MessageBox.Show("Error saving: " + ex.Message); }
             }
         }
 
         private void OpenProject_Click(object sender, RoutedEventArgs e)
         {
-            var ofd = new OpenFileDialog { Filter = "DOAS Project (*.json)|*.json" };
+            var ofd = new OpenFileDialog { Filter = "DOAS Project|*.doas" };
             if (ofd.ShowDialog() == true)
             {
-                var data = JsonSerializer.Deserialize<ProjectData>(File.ReadAllText(ofd.FileName));
-                if (data == null) return;
-                _isInternalUpdate = true;
-                CmbSeason.SelectedIndex = data.IsHeatingMode ? 1 : 0;
-                TxtOaFlow.Text = data.OaFlow; TxtOaDb.Text = data.OaDb; TxtOaWb.Text = data.OaWb; TxtAltitude.Text = data.Altitude;
-                ChkWh.IsChecked = data.WheelEnabled; ChkEcon.IsChecked = data.EconomizerEnabled;
-                TxtWhSens.Text = data.WheelSens; TxtWhLat.Text = data.WheelLat;
-                TxtEaFlow.Text = data.EaFlow; TxtEaDb.Text = data.EaDb; TxtEaRh.Text = data.EaRh;
-                ChkDw.IsChecked = data.DoubleWheelEnabled; TxtDwEff.Text = data.DwSens;
-                ChkHp.IsChecked = data.HpEnabled; TxtHpEff.Text = data.HpEff;
-                TxtOffCoil.Text = data.OffCoil; CmbCoilType.SelectedIndex = data.CoilTypeIndex; TxtCoilDt.Text = data.CoilDeltaT;
-                ChkReheat.IsChecked = data.ReheatEnabled; TxtSupTemp.Text = data.SupplyTemp; CmbReheatType.SelectedIndex = data.ReheatTypeIndex;
-                TxtHwEwt.Text = data.HwEwt; TxtHwLwt.Text = data.HwLwt; TxtGasEff.Text = data.GasEff;
-                TxtSupEsp.Text = data.SupOaEsp; TxtExtEsp.Text = data.ExtEaEsp; TxtFanEff.Text = data.FanEff; TxtDxEff.Text = data.DxEff;
-                
-                _isIp = !data.IsIpUnits; // Flip to trigger conversion in Units_Click
-                Units_Click(data.IsIpUnits ? MenuIP : MenuSI, new RoutedEventArgs());
-                
-                _isInternalUpdate = false;
-                Calculate_Click(null, null);
+                try {
+                    var xs = new XmlSerializer(typeof(ProjectData));
+                    using var sr = new StreamReader(ofd.FileName);
+                    var data = (ProjectData?)xs.Deserialize(sr);
+                    if (data == null) return;
+                    
+                    _isInternalUpdate = true;
+                    _isIp = data.IsIpUnits;
+                    MenuSI.IsChecked = !_isIp; MenuIP.IsChecked = _isIp;
+                    
+                    CmbSeason.SelectedIndex = data.IsHeatingMode ? 1 : 0;
+                    TxtOaFlow.Text = data.OaFlow; TxtOaDb.Text = data.OaDb; TxtOaWb.Text = data.OaWb; TxtAltitude.Text = data.Altitude;
+                    ChkWh.IsChecked = data.WheelEnabled; ChkEcon.IsChecked = data.EconomizerEnabled;
+                    TxtWhSens.Text = data.WheelSens; TxtWhLat.Text = data.WheelLat;
+                    TxtEaFlow.Text = data.EaFlow; TxtEaDb.Text = data.EaDb; TxtEaRh.Text = data.EaRh;
+                    ChkDw.IsChecked = data.DoubleWheelEnabled; TxtDwEff.Text = data.DwSens;
+                    ChkHp.IsChecked = data.HpEnabled; TxtHpEff.Text = data.HpEff;
+                    TxtOffCoil.Text = data.OffCoil; CmbCoilType.SelectedIndex = data.CoilTypeIndex; TxtCoilDt.Text = data.CoilDeltaT;
+                    ChkReheat.IsChecked = data.ReheatEnabled; TxtSupTemp.Text = data.SupplyTemp; CmbReheatType.SelectedIndex = data.ReheatTypeIndex;
+                    TxtHwEwt.Text = data.HwEwt; TxtHwLwt.Text = data.HwLwt; TxtGasEff.Text = data.GasEff;
+                    TxtSupEsp.Text = data.SupOaEsp; TxtExtEsp.Text = data.ExtEaEsp; TxtFanEff.Text = data.FanEff; TxtDxEff.Text = data.DxEff;
+                    
+                    ImgChart.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(_isIp ? "pack://application:,,,/Images/FlyCarpetPsyChart_IP.png" : "pack://application:,,,/Images/FlyCarpetPsyChart_SI.png"));
+                    _isInternalUpdate = false;
+                    Calculate_Click(null, null);
+                } catch (Exception ex) { MessageBox.Show("Error loading: " + ex.Message); }
+            }
+        }
+
+        private void PrintReport_Click(object sender, RoutedEventArgs e)
+        {
+            PrintDocument pd = new PrintDocument();
+            pd.PrintPage += (s, ev) => {
+                Graphics g = ev.Graphics!;
+                System.Drawing.Font tF = new System.Drawing.Font("Arial", 18, System.Drawing.FontStyle.Bold);
+                System.Drawing.Font hF = new System.Drawing.Font("Arial", 10, System.Drawing.FontStyle.Bold);
+                System.Drawing.Font bF = new System.Drawing.Font("Arial", 10);
+                Pen p = Pens.Black;
+                int y = 50, x = 50;
+
+                g.DrawString("DOAS Sizing Report", tF, Brushes.DarkBlue, x, y); y += 40;
+                g.DrawString($"Date: {DateTime.Now:d}", bF, Brushes.Black, x, y); y += 25;
+                g.DrawString(LblDensity.Text, bF, Brushes.Black, x, y); y += 40;
+
+                g.DrawString("System Summary", hF, Brushes.DarkBlue, x, y); y += 25;
+                var data = new List<(string, string)> {
+                    ("Cooling Capacity", LblCooling.Text),
+                    ("Heating Capacity", LblHeating.Text),
+                    ("Reheat Load", LblReheat.Text),
+                    ("Fresh Air Flow", TxtOaFlow.Text + (_isIp ? " CFM" : " L/s")),
+                    ("Extract Air Flow", TxtEaFlow.Text + (_isIp ? " CFM" : " L/s"))
+                };
+
+                int col1W = 200, col2W = 350, rH = 25;
+                foreach (var item in data) {
+                    g.DrawRectangle(p, x, y, col1W, rH); g.DrawString(item.Item1, bF, Brushes.Black, x + 5, y + 5);
+                    g.DrawRectangle(p, x + col1W, y, col2W, rH); g.DrawString(item.Item2, bF, Brushes.Black, x + col1W + 5, y + 5);
+                    y += rH;
+                }
+            };
+            var diag = new System.Windows.Controls.PrintDialog();
+            if (diag.ShowDialog() == true) { pd.Print(); }
+        }
+
+        private void SaveRtf_Click(object sender, RoutedEventArgs e)
+        {
+            var sfd = new SaveFileDialog { Filter = "Rich Text Format|*.rtf", FileName = "Report.rtf" };
+            if (sfd.ShowDialog() == true) {
+                string rtf = "{\\rtf1\\ansi\\deff0 {\\fonttbl{\\f0 Segoe UI;}}{\\colortbl;\\red0\\green0\\blue255;\\red255\\green0\\blue0;}\n" +
+                             "{\\f0\\fs36\\b DOAS Sizing Report}\\par\n" +
+                             "Date: " + DateTime.Now.ToShortDateString() + "\\par\\par\n" +
+                             "{\\b System Results:}\\par\n" +
+                             "Cooling: " + LblCooling.Text + "\\par\n" +
+                             "Heating: " + LblHeating.Text + "\\par\n" +
+                             "Reheat: " + LblReheat.Text + "\\par\n}";
+                File.WriteAllText(sfd.FileName, rtf);
+                MessageBox.Show("RTF Report saved!");
             }
         }
 

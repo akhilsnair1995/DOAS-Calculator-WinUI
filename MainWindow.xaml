@@ -33,10 +33,6 @@
             <Setter Property="BorderBrush" Value="#DADCE0"/>
         </Style>
 
-        <Style TargetType="ComboBox">
-            <Setter Property="Height" Value="28"/>
-        </Style>
-
         <Style x:Key="ResultLabel" TargetType="TextBlock">
             <Setter Property="FontSize" Value="28"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -47,6 +43,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Top Menu Bar -->
@@ -54,6 +51,9 @@
             <MenuItem Header="File">
                 <MenuItem Header="Open Project..." Click="OpenProject_Click"/>
                 <MenuItem Header="Save Project..." Click="SaveProject_Click"/>
+                <Separator/>
+                <MenuItem Header="Print Report (PDF)..." Click="PrintReport_Click"/>
+                <MenuItem Header="Save RTF Report..." Click="SaveRtf_Click"/>
                 <Separator/>
                 <MenuItem Header="Exit" Click="Exit_Click"/>
             </MenuItem>
@@ -75,9 +75,9 @@
             <Border Grid.Column="0" Background="#F8F9FA" BorderBrush="#DADCE0" BorderThickness="0,0,1,0">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="25">
                     <StackPanel>
-                        <TextBlock Text="System Inputs" FontSize="20" FontWeight="Bold" Margin="0,0,0,15"/>
+                        <TextBlock Text="Configuration" FontSize="20" FontWeight="Bold" Margin="0,0,0,15"/>
 
-                        <TextBlock Text="1. Outdoor Air &amp; Season" Style="{StaticResource HeaderLabel}"/>
+                        <TextBlock Text="1. Fresh Air &amp; Site" Style="{StaticResource HeaderLabel}"/>
                         <StackPanel Margin="10,0,0,0">
                             <Grid Margin="0,0,0,8">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
@@ -89,66 +89,66 @@
                             </Grid>
                             <UniformGrid Columns="2">
                                 <StackPanel Margin="0,0,5,5">
-                                    <TextBlock Text="Altitude (m)" FontSize="11" Foreground="#5F6368"/>
-                                    <TextBox x:Name="TxtAltitude" Text="0" Tag="alt"/>
+                                    <TextBlock Text="Altitude (m)" FontSize="11" Foreground="#5F6368" x:Name="LblAltUnit"/>
+                                    <TextBox x:Name="TxtAltitude" Text="0" Tag="alt" TextChanged="Input_Changed"/>
                                 </StackPanel>
                                 <StackPanel Margin="5,0,0,5">
-                                    <TextBlock Text="Air Flow (L/s)" FontSize="11" Foreground="#5F6368"/>
-                                    <TextBox x:Name="TxtOaFlow" Text="1000" Tag="oa_flow"/>
+                                    <TextBlock Text="Fresh Air (L/s)" FontSize="11" Foreground="#5F6368" x:Name="LblFlowUnit"/>
+                                    <TextBox x:Name="TxtOaFlow" Text="1000" Tag="oa_flow" TextChanged="Input_Changed"/>
                                 </StackPanel>
                                 <StackPanel Margin="0,0,5,5">
-                                    <TextBlock Text="OA Dry Bulb (°C)" FontSize="11" Foreground="#5F6368"/>
-                                    <TextBox x:Name="TxtOaDb" Text="35" Tag="temp"/>
+                                    <TextBlock Text="Fresh Air DB (°C)" FontSize="11" Foreground="#5F6368" x:Name="LblDbUnit"/>
+                                    <TextBox x:Name="TxtOaDb" Text="35" Tag="temp" TextChanged="Input_Changed"/>
                                 </StackPanel>
                                 <StackPanel Margin="5,0,0,5">
-                                    <TextBlock Text="OA Wet Bulb (°C)" FontSize="11" Foreground="#5F6368"/>
-                                    <TextBox x:Name="TxtOaWb" Text="28" Tag="temp"/>
+                                    <TextBlock Text="Fresh Air WB (°C)" FontSize="11" Foreground="#5F6368" x:Name="LblWbUnit"/>
+                                    <TextBox x:Name="TxtOaWb" Text="28" Tag="temp" TextChanged="Input_Changed"/>
                                 </StackPanel>
                             </UniformGrid>
                         </StackPanel>
 
                         <TextBlock Text="2. Enthalpy Wheel" Style="{StaticResource HeaderLabel}"/>
-                        <CheckBox x:Name="ChkWh" Content="Enable Energy Recovery" IsChecked="True" FontWeight="SemiBold" Margin="10,0,0,5"/>
+                        <CheckBox x:Name="ChkWh" Content="Enable Energy Recovery" IsChecked="True" FontWeight="SemiBold" Margin="10,0,0,5" Checked="Input_Changed" Unchecked="Input_Changed"/>
                         <StackPanel IsEnabled="{Binding IsChecked, ElementName=ChkWh}" Margin="25,0,0,0">
-                            <CheckBox x:Name="ChkEcon" Content="Enable Economizer Bypass" IsChecked="True" Margin="0,0,0,8"/>
+                            <CheckBox x:Name="ChkEcon" Content="Enable Economizer Bypass" IsChecked="True" Margin="0,0,0,8" Checked="Input_Changed" Unchecked="Input_Changed"/>
                             <UniformGrid Columns="2">
                                 <StackPanel Margin="0,0,5,5">
                                     <TextBlock Text="Sensible Eff. (%)" FontSize="11" Foreground="#5F6368"/>
-                                    <TextBox x:Name="TxtWhSens" Text="75" Tag="eff"/>
+                                    <TextBox x:Name="TxtWhSens" Text="75" Tag="eff" TextChanged="Input_Changed"/>
                                 </StackPanel>
                                 <StackPanel Margin="5,0,0,5">
                                     <TextBlock Text="Latent Eff. (%)" FontSize="11" Foreground="#5F6368"/>
-                                    <TextBox x:Name="TxtWhLat" Text="70" Tag="eff"/>
+                                    <TextBox x:Name="TxtWhLat" Text="70" Tag="eff" TextChanged="Input_Changed"/>
                                 </StackPanel>
                             </UniformGrid>
                             <TextBlock Text="Extract Air Conditions:" Margin="0,5,0,5" FontWeight="SemiBold" FontSize="12"/>
                             <UniformGrid Columns="3">
                                 <StackPanel Margin="0,0,5,5">
-                                    <TextBlock Text="Flow (L/s)" FontSize="11" Foreground="#5F6368"/>
-                                    <TextBox x:Name="TxtEaFlow" Text="800" Tag="oa_flow"/>
+                                    <TextBlock Text="Flow (L/s)" FontSize="11" Foreground="#5F6368" x:Name="LblEaFlowUnit"/>
+                                    <TextBox x:Name="TxtEaFlow" Text="800" Tag="oa_flow" TextChanged="Input_Changed"/>
                                 </StackPanel>
                                 <StackPanel Margin="2,0,2,5">
-                                    <TextBlock Text="DB (°C)" FontSize="11" Foreground="#5F6368"/>
-                                    <TextBox x:Name="TxtEaDb" Text="24" Tag="temp"/>
+                                    <TextBlock Text="DB (°C)" FontSize="11" Foreground="#5F6368" x:Name="LblEaDbUnit"/>
+                                    <TextBox x:Name="TxtEaDb" Text="24" Tag="temp" TextChanged="Input_Changed"/>
                                 </StackPanel>
                                 <StackPanel Margin="5,0,0,5">
                                     <TextBlock Text="RH (%)" FontSize="11" Foreground="#5F6368"/>
-                                    <TextBox x:Name="TxtEaRh" Text="50" Tag="rh"/>
+                                    <TextBox x:Name="TxtEaRh" Text="50" Tag="rh" TextChanged="Input_Changed"/>
                                 </StackPanel>
                             </UniformGrid>
                         </StackPanel>
 
                         <TextBlock Text="3. Passive Recovery / Reheat" Style="{StaticResource HeaderLabel}"/>
                         <StackPanel Margin="10,0,0,0">
-                            <CheckBox x:Name="ChkDw" Content="Double Wheel (Sensible)" IsChecked="False" Margin="0,0,0,5"/>
+                            <CheckBox x:Name="ChkDw" Content="Double Wheel (Sensible)" IsChecked="False" Margin="0,0,0,5" Checked="Input_Changed" Unchecked="Input_Changed"/>
                             <StackPanel IsEnabled="{Binding IsChecked, ElementName=ChkDw}" Margin="20,0,0,8">
                                 <TextBlock Text="Sensible Eff. (%)" FontSize="11" Foreground="#5F6368"/>
-                                <TextBox x:Name="TxtDwEff" Text="65" Width="100" HorizontalAlignment="Left" Tag="eff"/>
+                                <TextBox x:Name="TxtDwEff" Text="65" Width="100" HorizontalAlignment="Left" Tag="eff" TextChanged="Input_Changed"/>
                             </StackPanel>
-                            <CheckBox x:Name="ChkHp" Content="Wrap-Around Heat Pipe" IsChecked="False" Margin="0,0,0,5"/>
+                            <CheckBox x:Name="ChkHp" Content="Wrap-Around Heat Pipe" IsChecked="False" Margin="0,0,0,5" Checked="Input_Changed" Unchecked="Input_Changed"/>
                             <StackPanel IsEnabled="{Binding IsChecked, ElementName=ChkHp}" Margin="20,0,0,8">
                                 <TextBlock Text="Effectiveness (%)" FontSize="11" Foreground="#5F6368"/>
-                                <TextBox x:Name="TxtHpEff" Text="45" Width="100" HorizontalAlignment="Left" Tag="eff"/>
+                                <TextBox x:Name="TxtHpEff" Text="45" Width="100" HorizontalAlignment="Left" Tag="eff" TextChanged="Input_Changed"/>
                             </StackPanel>
                         </StackPanel>
 
@@ -163,18 +163,18 @@
                                 </ComboBox>
                             </Grid>
                             <StackPanel x:Name="PnlWaterCoil" Visibility="Collapsed" Margin="0,0,0,8">
-                                <TextBlock Text="Water Delta T (°C)" FontSize="11" Foreground="#5F6368"/>
-                                <TextBox x:Name="TxtCoilDt" Text="5.5" Tag="temp_diff"/>
+                                <TextBlock Text="Water Delta T (°C)" FontSize="11" Foreground="#5F6368" x:Name="LblCoilDtUnit"/>
+                                <TextBox x:Name="TxtCoilDt" Text="5.5" Tag="temp_diff" TextChanged="Input_Changed"/>
                             </StackPanel>
-                            <TextBlock Text="Off Coil Temp (°C)" FontSize="11" Foreground="#5F6368"/>
-                            <TextBox x:Name="TxtOffCoil" Text="12" Tag="temp"/>
+                            <TextBlock Text="Off Coil Temp (°C)" FontSize="11" Foreground="#5F6368" x:Name="LblOffCoilUnit"/>
+                            <TextBox x:Name="TxtOffCoil" Text="12" Tag="temp" TextChanged="Input_Changed"/>
                         </StackPanel>
 
                         <TextBlock Text="5. Supplemental Reheat" Style="{StaticResource HeaderLabel}"/>
-                        <CheckBox x:Name="ChkReheat" Content="Enable Reheat" IsChecked="False" FontWeight="SemiBold" Margin="10,0,0,5"/>
+                        <CheckBox x:Name="ChkReheat" Content="Enable Reheat" IsChecked="False" FontWeight="SemiBold" Margin="10,0,0,5" Checked="Input_Changed" Unchecked="Input_Changed"/>
                         <StackPanel IsEnabled="{Binding IsChecked, ElementName=ChkReheat}" Margin="25,0,0,0">
-                            <TextBlock Text="Target Supply (°C)" FontSize="11" Foreground="#5F6368"/>
-                            <TextBox x:Name="TxtSupTemp" Text="20" Tag="temp" Margin="0,0,0,8"/>
+                            <TextBlock Text="Target Supply (°C)" FontSize="11" Foreground="#5F6368" x:Name="LblSupTempUnit"/>
+                            <TextBox x:Name="TxtSupTemp" Text="20" Tag="temp" Margin="0,0,0,8" TextChanged="Input_Changed"/>
                             <TextBlock Text="Heating Source" FontSize="11" Foreground="#5F6368"/>
                             <ComboBox x:Name="CmbReheatType" Margin="0,0,0,8" SelectionChanged="CmbReheatType_SelectionChanged">
                                 <ComboBoxItem Content="Electric"/>
@@ -184,38 +184,38 @@
                             <StackPanel x:Name="PnlReheatWater" Visibility="Collapsed">
                                 <UniformGrid Columns="2">
                                     <StackPanel Margin="0,0,5,5">
-                                        <TextBlock Text="Ent. Water (°C)" FontSize="11" Foreground="#5F6368"/>
-                                        <TextBox x:Name="TxtHwEwt" Text="80" Tag="temp"/>
+                                        <TextBlock Text="Ent. Water (°C)" FontSize="11" Foreground="#5F6368" x:Name="LblEwtUnit"/>
+                                        <TextBox x:Name="TxtHwEwt" Text="80" Tag="temp" TextChanged="Input_Changed"/>
                                     </StackPanel>
                                     <StackPanel Margin="5,0,0,5">
-                                        <TextBlock Text="Lvg. Water (°C)" FontSize="11" Foreground="#5F6368"/>
-                                        <TextBox x:Name="TxtHwLwt" Text="60" Tag="temp"/>
+                                        <TextBlock Text="Lvg. Water (°C)" FontSize="11" Foreground="#5F6368" x:Name="LblLwtUnit"/>
+                                        <TextBox x:Name="TxtHwLwt" Text="60" Tag="temp" TextChanged="Input_Changed"/>
                                     </StackPanel>
                                 </UniformGrid>
                             </StackPanel>
                             <StackPanel x:Name="PnlReheatGas" Visibility="Collapsed">
                                 <TextBlock Text="Burner Eff. (%)" FontSize="11" Foreground="#5F6368"/>
-                                <TextBox x:Name="TxtGasEff" Text="80" Tag="eff"/>
+                                <TextBox x:Name="TxtGasEff" Text="80" Tag="eff" TextChanged="Input_Changed"/>
                             </StackPanel>
                         </StackPanel>
 
                         <TextBlock Text="6. Power Estimation" Style="{StaticResource HeaderLabel}"/>
                         <UniformGrid Columns="2" Margin="10,0,0,0">
                             <StackPanel Margin="0,0,5,5">
-                                <TextBlock Text="Supply ESP (Pa)" FontSize="11" Foreground="#5F6368"/>
-                                <TextBox x:Name="TxtSupEsp" Text="500" Tag="pressure"/>
+                                <TextBlock Text="Supply ESP (Pa)" FontSize="11" Foreground="#5F6368" x:Name="LblSupEspUnit"/>
+                                <TextBox x:Name="TxtSupEsp" Text="500" Tag="pressure" TextChanged="Input_Changed"/>
                             </StackPanel>
                             <StackPanel Margin="5,0,0,5">
-                                <TextBlock Text="Extract ESP (Pa)" FontSize="11" Foreground="#5F6368"/>
-                                <TextBox x:Name="TxtExtEsp" Text="500" Tag="pressure"/>
+                                <TextBlock Text="Extract ESP (Pa)" FontSize="11" Foreground="#5F6368" x:Name="LblExtEspUnit"/>
+                                <TextBox x:Name="TxtExtEsp" Text="500" Tag="pressure" TextChanged="Input_Changed"/>
                             </StackPanel>
                             <StackPanel Margin="0,0,5,5">
                                 <TextBlock Text="Fan Sys. Eff. (%)" FontSize="11" Foreground="#5F6368"/>
-                                <TextBox x:Name="TxtFanEff" Text="60" Tag="eff"/>
+                                <TextBox x:Name="TxtFanEff" Text="60" Tag="eff" TextChanged="Input_Changed"/>
                             </StackPanel>
                             <StackPanel Margin="5,0,0,5">
-                                <TextBlock Text="DX Eff. (COP)" FontSize="11" Foreground="#5F6368"/>
-                                <TextBox x:Name="TxtDxEff" Text="3.5" Tag="dx_eff"/>
+                                <TextBlock Text="DX Eff. (COP)" FontSize="11" Foreground="#5F6368" x:Name="LblDxEffUnit"/>
+                                <TextBox x:Name="TxtDxEff" Text="3.5" Tag="dx_eff" TextChanged="Input_Changed"/>
                             </StackPanel>
                         </UniformGrid>
                         
@@ -230,6 +230,11 @@
 
             <!-- Right Panel: Results -->
             <Grid Grid.Column="1" Background="White">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
                 <TabControl BorderThickness="0,1,0,0">
                     <TabItem Header="  Schedule &amp; Loads  ">
                         <Border Padding="25">
@@ -239,34 +244,36 @@
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
-                            <Border Grid.Row="0" Background="#F8F9FA" Padding="25" CornerRadius="8" Margin="0,0,0,25">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel>
-                                        <TextBlock x:Name="LblCooling" Text="Cooling: --" Style="{StaticResource ResultLabel}" Foreground="#1A73E8"/>
-                                        <TextBlock x:Name="LblHeating" Text="Heating: --" Style="{StaticResource ResultLabel}" Foreground="#D93025" Visibility="Collapsed"/>
-                                        <TextBlock x:Name="LblCoolingBreakdown" Text="Sensible: -- | Latent: --" FontSize="14" Foreground="#5F6368" Margin="5,5,0,5"/>
-                                        <TextBlock x:Name="LblDensity" Text="Density: --" FontSize="12" FontStyle="Italic" Margin="5,0,0,0"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="1">
-                                        <TextBlock x:Name="LblReheat" Text="Reheat: --" Style="{StaticResource ResultLabel}" Foreground="#E37400"/>
-                                        <TextBlock x:Name="LblPower" Text="Power Details: --" FontSize="14" FontWeight="Bold" Foreground="#3C4043" Margin="5,5,0,0"/>
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
+                                <Border Grid.Row="0" Background="#F8F9FA" Padding="25" CornerRadius="8" Margin="0,0,0,25">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock x:Name="LblCooling" Text="Cooling: --" Style="{StaticResource ResultLabel}" Foreground="#1A73E8"/>
+                                            <TextBlock x:Name="LblHeating" Text="Heating: --" Style="{StaticResource ResultLabel}" Foreground="#D93025" Visibility="Collapsed"/>
+                                            <TextBlock x:Name="LblCoolingBreakdown" Text="Sensible: -- | Latent: --" FontSize="14" Foreground="#5F6368" Margin="5,5,0,5"/>
+                                            <TextBlock x:Name="LblDensity" Text="Density: --" FontSize="12" FontStyle="Italic" Margin="5,0,0,0"/>
+                                            <TextBlock x:Name="LblChwFlow" Text="CHW Flow: --" FontSize="13" FontWeight="SemiBold" Foreground="#0D652D" Margin="5,5,0,0" Visibility="Collapsed"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock x:Name="LblReheat" Text="Reheat: --" Style="{StaticResource ResultLabel}" Foreground="#E37400"/>
+                                            <TextBlock x:Name="LblReheatDesc" Text="Active Reheat Load" FontSize="12" Foreground="#5F6368" Margin="5,0,0,5"/>
+                                            <TextBlock x:Name="LblPower" Text="Power Details: --" FontSize="14" FontWeight="Bold" Foreground="#3C4043" Margin="5,5,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
 
-                            <DataGrid x:Name="GridResults" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="White" BorderThickness="1" BorderBrush="#DADCE0">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="#" Binding="{Binding Index}" Width="40"/>
-                                    <DataGridTextColumn Header="Component" Binding="{Binding Component}" Width="*"/>
-                                    <DataGridTextColumn Header="Entering Air" Binding="{Binding Entering}" Width="2*"/>
-                                    <DataGridTextColumn Header="Leaving Air" Binding="{Binding Leaving}" Width="2*"/>
-                                </DataGrid.Columns>
-                            </DataGrid>
-                        </Grid>
+                                <DataGrid x:Name="GridResults" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="White" BorderThickness="1" BorderBrush="#DADCE0">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="#" Binding="{Binding Index}" Width="40"/>
+                                        <DataGridTextColumn Header="Component" Binding="{Binding Component}" Width="*"/>
+                                        <DataGridTextColumn Header="Entering Air" Binding="{Binding Entering}" Width="2*"/>
+                                        <DataGridTextColumn Header="Leaving Air" Binding="{Binding Leaving}" Width="2*"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Grid>
                         </Border>
                     </TabItem>
                     <TabItem Header="  Psychrometric Chart  ">
@@ -278,7 +285,26 @@
                         </Viewbox>
                     </TabItem>
                 </TabControl>
+
+                <!-- Warnings Panel -->
+                <Border x:Name="PnlWarning" Grid.Row="1" Background="#FFF4E5" BorderBrush="#FF9800" BorderThickness="0,1,0,0" Padding="15" Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="⚠" Foreground="#E65100" FontSize="20" Margin="0,0,15,0" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="LblWarnText" Text="Warnings here..." Foreground="#E65100" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
             </Grid>
         </Grid>
+
+        <!-- Status Bar -->
+        <StatusBar Grid.Row="2" Background="#F8F9FA" BorderBrush="#DADCE0" BorderThickness="0,1,0,0">
+            <StatusBarItem>
+                <TextBlock Text="Ready" x:Name="StatusText"/>
+            </StatusBarItem>
+            <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
+            <StatusBarItem HorizontalAlignment="Right">
+                <TextBlock Text="v2.11 [WPF Port]"/>
+            </StatusBarItem>
+        </StatusBar>
     </Grid>
 </Window>
