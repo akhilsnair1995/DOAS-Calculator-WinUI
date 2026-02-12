@@ -87,14 +87,32 @@ namespace DOASCalculatorWinUI
             Point Map(double t, double w)
             {
                 double valW = w * 1000.0;
-                float xB = 196.5f + (float)t * 12.53f;
-                float xT = 162.45f + (float)t * 12.00f;
-                float yS = 590.0f - (float)valW * 18.0f;
-                float xS = xB + (xT - xB) * (yS - 590.0f) / (50.0f - 590.0f);
-                return new Point(xS, yS);
+                double y = 590.0 - (valW * 18.0);
+                double x;
+
+                if (_isIp)
+                {
+                    double tf = Units.CtoF(t);
+                    double xBottom = 145.9 + (tf - 30.0) * 7.59;
+                    double slope = -0.0675 + (tf - 30.0) * 0.000709;
+                    x = xBottom + slope * (y - 590.0);
+                }
+                else
+                {
+                    double xBottom = 196.5 + t * 12.65;
+                    double slope = 0.001257 * t - 0.0630;
+                    x = xBottom + slope * (y - 590.0);
+                }
+                return new Point(x, y);
             }
 
-            Brush[] colors = { new SolidColorBrush(Microsoft.UI.Colors.Green), new SolidColorBrush(Microsoft.UI.Colors.Purple), new SolidColorBrush(Microsoft.UI.Colors.DarkCyan), new SolidColorBrush(Microsoft.UI.Colors.Blue), new SolidColorBrush(Microsoft.UI.Colors.Magenta) };
+            Brush[] colors = { 
+                new SolidColorBrush(Microsoft.UI.Colors.Green), 
+                new SolidColorBrush(Microsoft.UI.Colors.Purple), 
+                new SolidColorBrush(Microsoft.UI.Colors.DarkCyan), 
+                new SolidColorBrush(Microsoft.UI.Colors.Blue), 
+                new SolidColorBrush(Microsoft.UI.Colors.Magenta) 
+            };
 
             for (int i = 0; i < results.Steps.Count; i++)
             {
