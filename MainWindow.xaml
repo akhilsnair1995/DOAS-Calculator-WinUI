@@ -20,11 +20,12 @@
         <MenuBar Grid.Row="0" Grid.ColumnSpan="2">
             <MenuBarItem Title="File"><MenuFlyoutItem Text="Exit" Click="Exit_Click"/></MenuBarItem>
             <MenuBarItem Title="Units">
-                <ToggleMenuFlyoutItem x:Name="MenuSI" Text="SI" IsChecked="True" Click="Units_Click"/>
-                <ToggleMenuFlyoutItem x:Name="MenuIP" Text="IP" Click="Units_Click"/>
+                <ToggleMenuFlyoutItem x:Name="MenuSI" Text="SI (Metric)" IsChecked="True" Click="Units_Click"/>
+                <ToggleMenuFlyoutItem x:Name="MenuIP" Text="IP (Imperial)" Click="Units_Click"/>
             </MenuBarItem>
         </MenuBar>
 
+        <!-- Left Pane: Inputs -->
         <Border Grid.Row="1" Grid.Column="0" BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}" BorderThickness="0,0,1,0">
             <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
                 <StackPanel Spacing="16">
@@ -59,11 +60,20 @@
                         </StackPanel>
                     </Expander>
 
+                    <Expander Header="Passive Recovery (Wrap-around)" HorizontalAlignment="Stretch">
+                        <StackPanel Spacing="12">
+                            <ToggleSwitch x:Name="TogDw" Header="Dual Wheel (Sensible)" IsOn="False" Toggled="Input_Changed"/>
+                            <NumberBox x:Name="NumDwEff" Header="Sensible Eff (%)" Value="65" IsEnabled="{x:Bind TogDw.IsOn, Mode=OneWay}" ValueChanged="Input_Changed"/>
+                            <ToggleSwitch x:Name="TogHp" Header="Horse-shoe Heat Pipe" IsOn="False" Toggled="Input_Changed"/>
+                            <NumberBox x:Name="NumHpEff" Header="Effectiveness (%)" Value="45" IsEnabled="{x:Bind TogHp.IsOn, Mode=OneWay}" ValueChanged="Input_Changed"/>
+                        </StackPanel>
+                    </Expander>
+
                     <Expander Header="Conditioning" HorizontalAlignment="Stretch">
                         <StackPanel Spacing="12">
                             <NumberBox x:Name="NumOffCoil" Header="Off-Coil Temp" Value="12.0" ValueChanged="Input_Changed"/>
                             <ToggleSwitch x:Name="TogReheat" Header="Reheat" IsOn="False" Toggled="Input_Changed"/>
-                            <NumberBox x:Name="NumSupplyTemp" Header="Supply Temp" Value="20.0" ValueChanged="Input_Changed"/>
+                            <NumberBox x:Name="NumSupplyTemp" Header="Supply Temp" Value="20.0" IsEnabled="{x:Bind TogReheat.IsOn, Mode=OneWay}" ValueChanged="Input_Changed"/>
                         </StackPanel>
                     </Expander>
 
@@ -80,6 +90,7 @@
             </ScrollViewer>
         </Border>
 
+        <!-- Right Pane: Results -->
         <Grid Grid.Row="1" Grid.Column="1" Padding="20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -88,10 +99,24 @@
             </Grid.RowDefinitions>
 
             <Grid ColumnDefinitions="*,*,*,*" Margin="0,0,0,20">
-                <StackPanel Grid.Column="0"><TextBlock Text="Cooling" Style="{StaticResource CaptionTextBlockStyle}"/><TextBlock x:Name="ResCooling" Text="0.0 kW" Style="{StaticResource TitleTextBlockStyle}" Foreground="SteelBlue"/></StackPanel>
-                <StackPanel Grid.Column="1"><TextBlock Text="Heating" Style="{StaticResource CaptionTextBlockStyle}"/><TextBlock x:Name="ResHeating" Text="0.0 kW" Style="{StaticResource TitleTextBlockStyle}" Foreground="OrangeRed"/></StackPanel>
-                <StackPanel Grid.Column="2"><TextBlock Text="Reheat" Style="{StaticResource CaptionTextBlockStyle}"/><TextBlock x:Name="ResReheat" Text="0.0 kW" Style="{StaticResource TitleTextBlockStyle}" Foreground="DarkMagenta"/></StackPanel>
-                <StackPanel Grid.Column="3"><TextBlock Text="Fan" Style="{StaticResource CaptionTextBlockStyle}"/><TextBlock x:Name="ResFanPower" Text="0.0 kW" Style="{StaticResource TitleTextBlockStyle}"/></StackPanel>
+                <StackPanel Grid.Column="0" Spacing="2">
+                    <TextBlock Text="Cooling" Style="{StaticResource CaptionTextBlockStyle}"/>
+                    <TextBlock x:Name="ResCooling" Text="0.0 kW" Style="{StaticResource TitleTextBlockStyle}" Foreground="SteelBlue"/>
+                    <TextBlock x:Name="ResCoolingBreakdown" Text="S: 0.0 | L: 0.0" FontSize="12" Foreground="Gray"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1">
+                    <TextBlock Text="Heating" Style="{StaticResource CaptionTextBlockStyle}"/>
+                    <TextBlock x:Name="ResHeating" Text="0.0 kW" Style="{StaticResource TitleTextBlockStyle}" Foreground="OrangeRed"/>
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="Reheat" Style="{StaticResource CaptionTextBlockStyle}"/>
+                    <TextBlock x:Name="ResReheat" Text="0.0 kW" Style="{StaticResource TitleTextBlockStyle}" Foreground="DarkMagenta"/>
+                </StackPanel>
+                <StackPanel Grid.Column="3">
+                    <TextBlock Text="Fans" Style="{StaticResource CaptionTextBlockStyle}"/>
+                    <TextBlock x:Name="ResFanPower" Text="0.0 kW" Style="{StaticResource TitleTextBlockStyle}"/>
+                    <TextBlock x:Name="ResFanBreakdown" Text="S: 0.0 | E: 0.0" FontSize="12" Foreground="Gray"/>
+                </StackPanel>
             </Grid>
 
             <Viewbox Grid.Row="1" Stretch="Uniform">

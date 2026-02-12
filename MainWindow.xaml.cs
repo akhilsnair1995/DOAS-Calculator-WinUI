@@ -41,6 +41,12 @@ namespace DOASCalculatorWinUI
                     WheelSens = NumWheelSens.Value,
                     WheelLat = NumWheelLat.Value,
                     EconomizerEnabled = ChkEconomizer.IsChecked == true,
+                    
+                    DoubleWheelEnabled = TogDw.IsOn,
+                    DwSens = NumDwEff.Value,
+                    HpEnabled = TogHp.IsOn,
+                    HpEff = NumHpEff.Value,
+
                     OffCoilTemp = _isIp ? Units.FtoC(NumOffCoil.Value) : NumOffCoil.Value,
                     ReheatEnabled = TogReheat.IsOn,
                     TargetSupplyTemp = _isIp ? Units.FtoC(NumSupplyTemp.Value) : NumSupplyTemp.Value,
@@ -53,14 +59,18 @@ namespace DOASCalculatorWinUI
                 
                 if (_isIp) {
                     ResCooling.Text = $"{Units.KwToMbh(results.TotalCooling):F1} MBH";
+                    ResCoolingBreakdown.Text = $"S: {Units.KwToMbh(results.SensibleCooling):F1} | L: {Units.KwToMbh(results.LatentCooling):F1} MBH";
                     ResHeating.Text = $"{Units.KwToMbh(results.TotalHeating):F1} MBH";
                     ResReheat.Text = $"{Units.KwToMbh(results.ReheatLoad):F1} MBH";
                     ResFanPower.Text = $"{results.TotalFanPowerKW:F2} kW";
+                    ResFanBreakdown.Text = $"S: {results.SupFanPowerKW:F2} | E: {results.ExtFanPowerKW:F2} kW";
                 } else {
                     ResCooling.Text = $"{results.TotalCooling:F1} kW";
+                    ResCoolingBreakdown.Text = $"S: {results.SensibleCooling:F1} | L: {results.LatentCooling:F1} kW";
                     ResHeating.Text = $"{results.TotalHeating:F1} kW";
                     ResReheat.Text = $"{results.ReheatLoad:F1} kW";
                     ResFanPower.Text = $"{results.TotalFanPowerKW:F2} kW";
+                    ResFanBreakdown.Text = $"S: {results.SupFanPowerKW:F2} | E: {results.ExtFanPowerKW:F2} kW";
                 }
                 
                 var schedule = new List<object>();
@@ -130,11 +140,11 @@ namespace DOASCalculatorWinUI
             NumExtEsp.Value = toIp ? Units.PaToInWg(NumExtEsp.Value) : Units.InWgToPa(NumExtEsp.Value);
 
             NumAltitude.Header = toIp ? "Altitude (ft)" : "Altitude (m)";
-            NumOaFlow.Header = toIp ? "Flow (CFM)" : "Flow (L/s)";
-            NumOaDb.Header = toIp ? "DB (°F)" : "DB (°C)";
-            NumOaWb.Header = toIp ? "WB (°F)" : "WB (°C)";
-            NumEaFlow.Header = toIp ? "Flow (CFM)" : "Flow (L/s)";
-            NumEaDb.Header = toIp ? "DB (°F)" : "DB (°C)";
+            NumOaFlow.Header = toIp ? "OA Flow (CFM)" : "OA Flow (L/s)";
+            NumOaDb.Header = toIp ? "OA DB (°F)" : "OA DB (°C)";
+            NumOaWb.Header = toIp ? "OA WB (°F)" : "OA WB (°C)";
+            NumEaFlow.Header = toIp ? "EA Flow (CFM)" : "EA Flow (L/s)";
+            NumEaDb.Header = toIp ? "EA DB (°F)" : "EA DB (°C)";
             NumOffCoil.Header = toIp ? "Off-Coil (°F)" : "Off-Coil (°C)";
             NumSupplyTemp.Header = toIp ? "Supply (°F)" : "Supply (°C)";
             NumSupEsp.Header = toIp ? "Sup ESP (in.wg)" : "Sup ESP (Pa)";
