@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DOASCalculatorWinUI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e1664a4ca73164e05855dd9f8a22679c1ff87a79")]
 [assembly: System.Reflection.AssemblyProductAttribute("DOASCalculatorWinUI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DOASCalculatorWinUI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

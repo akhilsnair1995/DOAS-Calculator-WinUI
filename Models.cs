@@ -85,4 +85,38 @@ namespace DOASCalculatorWinUI
         public double ExtMotorKW { get; set; }
         public double TotalFanPowerKW => SupFanPowerKW + ExtFanPowerKW;
     }
+
+    public class ProjectData
+    {
+        public bool IsHeatingMode { get; set; }
+        public string OaFlow { get; set; } = "";
+        public string OaDb { get; set; } = "";
+        public string OaWb { get; set; } = "";
+        public string Altitude { get; set; } = "";
+        public bool WheelEnabled { get; set; }
+        public bool EconomizerEnabled { get; set; }
+        public string WheelSens { get; set; } = "";
+        public string WheelLat { get; set; } = "";
+        public string EaFlow { get; set; } = "";
+        public string EaDb { get; set; } = "";
+        public string EaRh { get; set; } = "";
+        public bool DoubleWheelEnabled { get; set; } 
+        public string DwSens { get; set; } = "";
+        public bool HpEnabled { get; set; }
+        public string HpEff { get; set; } = "";
+        public string OffCoil { get; set; } = "";
+        public int CoilTypeIndex { get; set; }
+        public string CoilDeltaT { get; set; } = "";
+        public bool ReheatEnabled { get; set; }
+        public string SupplyTemp { get; set; } = "";
+        public int ReheatTypeIndex { get; set; }
+        public string HwEwt { get; set; } = "";
+        public string HwLwt { get; set; } = "";
+        public string GasEff { get; set; } = "";
+        public string SupOaEsp { get; set; } = "";
+        public string ExtEaEsp { get; set; } = "";
+        public string FanEff { get; set; } = "";
+        public string DxEff { get; set; } = "";
+        public bool IsIpUnits { get; set; }
+    }
 }
