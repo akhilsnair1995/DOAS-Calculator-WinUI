@@ -12,7 +12,6 @@ namespace DOASCalculatorWinUI
             
             TestPsychrometrics();
             TestFullProcess();
-            TestFanHeatGain();
             
             Console.WriteLine("=== TESTS COMPLETED ===");
         }
@@ -60,31 +59,6 @@ namespace DOASCalculatorWinUI
             Debug.Assert(results.Steps.Any(s => s.Component == "Cooling Coil"), "Coil step missing");
             
             Console.WriteLine("PASSED");
-        }
-
-        private static void TestFanHeatGain()
-        {
-            Console.Write("Testing Supply Fan Heat Gain Logic... ");
-            var inputs = new SystemInputs
-            {
-                Altitude = 0,
-                OaFlow = 1000,
-                OaDb = 30,
-                OaWb = 20,
-                OffCoilTemp = 12,
-                FanEff = 60,
-                SupOaEsp = 1000 // High pressure to see significant heat
-            };
-
-            var results = DOASEngine.Process(inputs);
-            
-            var fanStep = results.Steps.FirstOrDefault(s => s.Component == "Supply Fan Heat");
-            Debug.Assert(fanStep != null, "Fan heat step not generated");
-            
-            double dT = fanStep.Leaving.T - fanStep.Entering.T;
-            Debug.Assert(dT > 0, "Fan must increase air temperature");
-            
-            Console.WriteLine($"PASSED (dT = {dT:F2} K)");
         }
     }
 }

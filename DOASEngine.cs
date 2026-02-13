@@ -10,119 +10,119 @@ namespace DOASCalculatorWinUI
             var res = new SystemResults();
             Psychrometrics.SetAltitude(input.Altitude);
 
+            double cp = 1.006; // kJ/kg.K
+
+            // 1. Initial Air States
             double oaPv = Psychrometrics.GetPvFromTwb(input.OaDb, input.OaWb);
             double oaW = Psychrometrics.GetHumidityRatio(oaPv);
             res.AirDensity = Psychrometrics.GetDensity(input.OaDb);
-            double mDot = (input.OaFlow / 1000.0) * res.AirDensity; // kg/s
+            double mDotOa = (input.OaFlow / 1000.0) * res.AirDensity;
 
-            AirState current = new AirState(input.OaDb, oaW, "OA");
-            res.ChartPoints["OA"] = current;
+            double raW = Psychrometrics.GetHumidityRatio(Psychrometrics.GetPvFromRh(input.EaDb, input.EaRh));
+            double raRho = Psychrometrics.GetDensity(input.EaDb);
+            double mDotRa = (input.EaFlow / 1000.0) * raRho;
 
-            // EA Props for recovery
-            double eaW = Psychrometrics.GetHumidityRatio(Psychrometrics.GetPvFromRh(input.EaDb, input.EaRh));
-            AirState eaState = new AirState(input.EaDb, eaW, "EA");
-            res.ChartPoints["EA"] = eaState;
+            AirState currentOa = new AirState(input.OaDb, oaW, "OA");
+            AirState currentRa = new AirState(input.EaDb, raW, "RA");
+            
+            res.ChartPoints["OA"] = currentOa;
+            res.ChartPoints["RA"] = currentRa;
 
-            int ptIdx = 1;
-
-            // 1. Enthalpy Wheel
-            if (input.WheelEnabled)
+            // 2. Sensible Wheel Recovery (Series Source: Return Air)
+            double qShrw = 0;
+            if (input.DoubleWheelEnabled && mDotRa > 0)
             {
-                double tOut = current.T - (input.WheelSens / 100.0) * (current.T - input.EaDb);
-                double wOut = current.W - (input.WheelLat / 100.0) * (current.W - eaW);
+                // Sensible Wheel transfers heat from RA to Coil-Leaving air.
+                // This pre-cools the RA before it enters the Enthalpy Wheel.
+                double cMin = Math.Min(mDotOa, mDotRa) * cp;
+                qShrw = (input.DwSens / 100.0) * cMin * (input.EaDb - input.OffCoilTemp);
                 
-                // Physics Clamp (Saturation)
+                if (qShrw > 0)
+                {
+                    double dtRa = qShrw / (mDotRa * cp);
+                    AirState raMid = new AirState(currentRa.T - dtRa, currentRa.W, "RA_Exh_Out");
+                    res.Steps.Add(new ProcessStep { Component = "Sensible Wheel (Exh)", Entering = currentRa, Leaving = raMid });
+                    currentRa = raMid;
+                }
+            }
+
+            // 3. Enthalpy Wheel (Primary Recovery)
+            if (input.WheelEnabled && mDotRa > 0)
+            {
+                double cMin = Math.Min(mDotOa, mDotRa);
+                
+                // Sensible effectiveness on Temperature
+                double qEhrwSens = (input.WheelSens / 100.0) * (cMin * cp) * (currentOa.T - currentRa.T);
+                double tOut = currentOa.T - qEhrwSens / (mDotOa * cp);
+                
+                // Latent effectiveness on Humidity Ratio
+                double dW = (input.WheelLat / 100.0) * (Math.Min(mDotOa, mDotRa) / mDotOa) * (currentOa.W - currentRa.W);
+                double wOut = currentOa.W - dW;
+
+                // Physics Clamp
                 double wsat = Psychrometrics.GetHumidityRatio(Psychrometrics.GetSatVapPres(tOut));
                 if (wOut > wsat) wOut = wsat;
 
-                AirState next = new AirState(tOut, wOut, ptIdx.ToString());
-                res.Steps.Add(new ProcessStep { Component = "Enthalpy Wheel", Entering = current, Leaving = next });
-                res.ChartPoints[next.Name] = next;
-                current = next; ptIdx++;
+                AirState nextOa = new AirState(tOut, wOut, "EW_Out");
+                res.Steps.Add(new ProcessStep { Component = "Enthalpy Wheel", Entering = currentOa, Leaving = nextOa });
+                currentOa = nextOa;
             }
 
-            // 2. Pre-Cool / Pre-Heat Recovery (Sensible only or Wrap-around)
-            double qRecoveredSensible = 0;
-
-            if (input.DoubleWheelEnabled)
-            {
-                double driving = current.T - input.OffCoilTemp;
-                if (driving > 0)
-                {
-                    double hIn = current.Enthalpy;
-                    double tOut = current.T - (input.DwSens / 100.0) * driving;
-                    double wsat = Psychrometrics.GetHumidityRatio(Psychrometrics.GetSatVapPres(tOut));
-                    double wOut = current.W > wsat ? wsat : current.W;
-
-                    AirState next = new AirState(tOut, wOut, ptIdx.ToString());
-                    res.Steps.Add(new ProcessStep { Component = "Sensible Wheel (Pre)", Entering = current, Leaving = next });
-                    res.ChartPoints[next.Name] = next;
-                    
-                    qRecoveredSensible = mDot * (hIn - next.Enthalpy);
-                    current = next; ptIdx++;
-                }
-            }
-
+            // 4. Heat Pipe Pre-Cool (Standard Wrap-around)
+            double qHp = 0;
             if (input.HpEnabled)
             {
-                double driving = current.T - input.OffCoilTemp;
+                double driving = currentOa.T - input.OffCoilTemp;
                 if (driving > 0)
                 {
-                    double hIn = current.Enthalpy;
-                    double tOut = current.T - (input.HpEff / 100.0) * driving;
-                    double wsat = Psychrometrics.GetHumidityRatio(Psychrometrics.GetSatVapPres(tOut));
-                    double wOut = current.W > wsat ? wsat : current.W;
-
-                    AirState next = new AirState(tOut, wOut, ptIdx.ToString());
-                    res.Steps.Add(new ProcessStep { Component = "HP Pre-Cool", Entering = current, Leaving = next });
-                    res.ChartPoints[next.Name] = next;
-                    
-                    qRecoveredSensible += mDot * (hIn - next.Enthalpy);
-                    current = next; ptIdx++;
+                    qHp = (input.HpEff / 100.0) * mDotOa * cp * driving;
+                    double dt = qHp / (mDotOa * cp);
+                    AirState nextOa = new AirState(currentOa.T - dt, currentOa.W, "HP_Pre");
+                    res.Steps.Add(new ProcessStep { Component = "HP Pre-Cool", Entering = currentOa, Leaving = nextOa });
+                    currentOa = nextOa;
                 }
             }
 
-            // 3. Main Cooling Coil
+            // 5. Main Cooling Coil
             double offSatW = Psychrometrics.GetHumidityRatio(Psychrometrics.GetSatVapPres(input.OffCoilTemp));
-            double offW = (current.W > offSatW) ? offSatW : current.W;
-            AirState coilOut = new AirState(input.OffCoilTemp, offW, ptIdx.ToString());
+            double offW = (currentOa.W > offSatW) ? offSatW : currentOa.W;
+            AirState coilOut = new AirState(input.OffCoilTemp, offW, "Coil_Out");
             
-            res.TotalCooling = mDot * (current.Enthalpy - coilOut.Enthalpy);
-            res.SensibleCooling = mDot * 1.006 * (current.T - coilOut.T);
+            res.TotalCooling = mDotOa * (currentOa.Enthalpy - coilOut.Enthalpy);
+            res.SensibleCooling = mDotOa * cp * (currentOa.T - coilOut.T);
             res.LatentCooling = Math.Max(0, res.TotalCooling - res.SensibleCooling);
 
-            res.Steps.Add(new ProcessStep { Component = "Cooling Coil", Entering = current, Leaving = coilOut });
-            res.ChartPoints[coilOut.Name] = coilOut;
-
-            // Main Coil Hydronics
+            res.Steps.Add(new ProcessStep { Component = "Cooling Coil", Entering = currentOa, Leaving = coilOut });
+            
             if (input.MainCoilType == CoilType.Water && input.MainCoilDeltaT > 0)
+                res.MainCoilWaterFlow = res.TotalCooling / (4.186 * input.MainCoilDeltaT);
+
+            currentOa = coilOut;
+
+            // 6. Recovery Reheat
+            if (qHp > 0)
             {
-                res.MainCoilWaterFlow = res.TotalCooling / (4.186 * input.MainCoilDeltaT); // L/s
+                double dt = qHp / (mDotOa * cp);
+                AirState nextOa = new AirState(currentOa.T + dt, currentOa.W, "HP_Reheat");
+                res.Steps.Add(new ProcessStep { Component = "HP Reheat", Entering = currentOa, Leaving = nextOa });
+                currentOa = nextOa;
             }
 
-            current = coilOut; ptIdx++;
-
-            // 4. Recovery Reheat (Scientist's First Law Correction)
-            if (qRecoveredSensible > 0)
+            if (qShrw > 0)
             {
-                // Re-inject the energy removed during pre-cool
-                double dT = qRecoveredSensible / (mDot * 1.006);
-                AirState next = new AirState(current.T + dT, current.W, ptIdx.ToString());
-                string comp = input.DoubleWheelEnabled ? "Sensible Wheel (Re)" : "HP Reheat";
-                res.Steps.Add(new ProcessStep { Component = comp, Entering = current, Leaving = next });
-                res.ChartPoints[next.Name] = next;
-                current = next; ptIdx++;
+                double dtSa = qShrw / (mDotOa * cp);
+                AirState saFinal = new AirState(currentOa.T + dtSa, currentOa.W, "SW_Reheat");
+                res.Steps.Add(new ProcessStep { Component = "Sensible Wheel (Re)", Entering = currentOa, Leaving = saFinal });
+                currentOa = saFinal;
             }
 
-            // 5. Supplementary Reheat
-            if (input.ReheatEnabled && input.TargetSupplyTemp > current.T)
+            // 7. Supplementary Reheat
+            if (input.ReheatEnabled && input.TargetSupplyTemp > currentOa.T)
             {
-                res.ReheatLoad = mDot * 1.006 * (input.TargetSupplyTemp - current.T);
-                AirState next = new AirState(input.TargetSupplyTemp, current.W, ptIdx.ToString());
-                res.Steps.Add(new ProcessStep { Component = "Supplementary Reheat", Entering = current, Leaving = next });
-                res.ChartPoints[next.Name] = next;
-
-                // Reheat Source Modeling
+                res.ReheatLoad = mDotOa * cp * (input.TargetSupplyTemp - currentOa.T);
+                AirState next = new AirState(input.TargetSupplyTemp, currentOa.W, "SA_Reheat");
+                res.Steps.Add(new ProcessStep { Component = "Supplementary Reheat", Entering = currentOa, Leaving = next });
+                
                 if (input.ReheatType == ReheatSource.HotWater)
                 {
                     double dT = Math.Abs(input.HwEwt - input.HwLwt);
@@ -130,14 +130,12 @@ namespace DOASCalculatorWinUI
                 }
                 else if (input.ReheatType == ReheatSource.Gas && input.GasEfficiency > 0)
                 {
-                    // Approx 10kWh per m3 of natural gas
-                    res.GasConsumption = (res.ReheatLoad / (input.GasEfficiency / 100.0)) / 10.0 * 3600 / 3600; // Simplified m3/h
+                    res.GasConsumption = (res.ReheatLoad / (input.GasEfficiency / 100.0)) / 10.0; 
                 }
-
-                current = next;
+                currentOa = next;
             }
 
-            // 6. Internal Pressure Drop Estimation
+            // 8. Internal Pressure Drop Estimation
             double wheelPd = input.WheelEnabled ? 250 : 0;
             double recoverySensPd = (input.DoubleWheelEnabled || input.HpEnabled) ? 150 : 0;
             double reheatPd = input.ReheatEnabled ? 50 : 0;
@@ -145,32 +143,23 @@ namespace DOASCalculatorWinUI
             res.SupInternalPd = input.PdDamper + input.PdFilterPre + input.PdFilterMain + wheelPd + input.PdCoil + recoverySensPd + reheatPd;
             res.ExtInternalPd = input.PdDamper + input.PdFilterPre + wheelPd; 
 
-            // 7. Fan Power Calculation
+            // 9. Fan Power Calculation
             double supTsp = input.SupOaEsp + res.SupInternalPd;
-            double supFanDensity = Psychrometrics.GetDensity(current.T); 
-            double qSupLocal = mDot / supFanDensity; 
+            double qSupLocal = mDotOa / Psychrometrics.GetDensity(currentOa.T); 
             res.SupFanPowerKW = (qSupLocal * supTsp) / (input.FanEff / 100.0) / 1000.0;
+            res.SupElectricalPowerKW = res.SupFanPowerKW / ((input.MotorEff / 100.0) * (input.DriveEff / 100.0));
 
-            // 8. Supply Fan Heat Gain (Architect's Correction)
-            // Most of the fan power (absorbed) converts to heat in the airstream
-            if (res.SupFanPowerKW > 0)
-            {
-                double dT_fan = res.SupFanPowerKW / (mDot * 1.006);
-                AirState next = new AirState(current.T + dT_fan, current.W, "SA");
-                res.Steps.Add(new ProcessStep { Component = "Supply Fan Heat", Entering = current, Leaving = next });
-                res.ChartPoints["SA"] = next;
-                current = next;
-            }
+            // 10. Final Supply State (Excluding Fan Heat to match manufacturer data)
+            res.ChartPoints["SA"] = currentOa;
 
             double extTsp = input.ExtEaEsp + res.ExtInternalPd;
-            double extFanDensity = Psychrometrics.GetDensity(input.EaDb);
-            double qExtLocal = (input.EaFlow / 1000.0) * (Psychrometrics.GetDensity(input.EaDb) / extFanDensity); 
+            double qExtLocal = (input.EaFlow / 1000.0) * (Psychrometrics.GetDensity(input.EaDb) / Psychrometrics.GetDensity(input.EaDb)); 
             res.ExtFanPowerKW = (qExtLocal * extTsp) / (input.FanEff / 100.0) / 1000.0;
+            res.ExtElectricalPowerKW = res.ExtFanPowerKW / ((input.MotorEff / 100.0) * (input.DriveEff / 100.0));
 
-            // 9. Motor Selection
-            // Using a more standard 15% margin for motor sizing
-            res.SupMotorKW = SelectMotor(res.SupFanPowerKW * 1.15); 
-            res.ExtMotorKW = SelectMotor(res.ExtFanPowerKW * 1.15);
+            // 11. Motor Selection
+            res.SupMotorKW = SelectMotor(res.SupElectricalPowerKW * 1.15); 
+            res.ExtMotorKW = SelectMotor(res.ExtElectricalPowerKW * 1.15);
 
             return res;
         }

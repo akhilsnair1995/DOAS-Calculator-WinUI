@@ -53,7 +53,7 @@
                             <NumberBox Header="Sensible %" Value="{x:Bind ViewModel.WheelSens, Mode=TwoWay}"/>
                             <NumberBox Header="Latent %" Value="{x:Bind ViewModel.WheelLat, Mode=TwoWay}"/>
                         </StackPanel>
-                        <ToggleSwitch Header="Sensible Wheel" IsOn="{x:Bind ViewModel.DwEnabled, Mode=TwoWay}"/>
+                        <ToggleSwitch Header="Sensible Wheel (SHRW) - Series" IsOn="{x:Bind ViewModel.DwEnabled, Mode=TwoWay}"/>
                         <NumberBox Header="Wheel Eff %" Value="{x:Bind ViewModel.DwEff, Mode=TwoWay}" Visibility="{x:Bind BoolToVis(ViewModel.IsDwFields), Mode=OneWay}"/>
                         <ToggleSwitch Header="Heat Pipe" IsOn="{x:Bind ViewModel.HpEnabled, Mode=TwoWay}"/>
                         <NumberBox Header="Pipe Eff %" Value="{x:Bind ViewModel.HpEff, Mode=TwoWay}" Visibility="{x:Bind BoolToVis(ViewModel.IsHpFields), Mode=OneWay}"/>
@@ -84,6 +84,14 @@
                     <StackPanel Spacing="12">
                         <TextBlock Text="Fans &amp; Pressure" Style="{StaticResource BodyStrongTextBlockStyle}"/>
                         <NumberBox Header="Fan System Eff %" Value="{x:Bind ViewModel.FanEff, Mode=TwoWay}"/>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <NumberBox Grid.Column="0" Header="Motor Eff %" Value="{x:Bind ViewModel.MotorEff, Mode=TwoWay}"/>
+                            <NumberBox Grid.Column="1" Header="Drive Eff %" Value="{x:Bind ViewModel.DriveEff, Mode=TwoWay}"/>
+                        </Grid>
                         <Grid ColumnSpacing="12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>

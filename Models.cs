@@ -62,6 +62,8 @@ namespace DOASCalculatorWinUI
         public double SupOaEsp { get; set; }
         public double ExtEaEsp { get; set; }
         public double FanEff { get; set; }
+        public double MotorEff { get; set; } = 93;
+        public double DriveEff { get; set; } = 95;
 
         // Customizable Pressure Drops (Pa)
         public double PdDamper { get; set; } = 50;
@@ -94,9 +96,12 @@ namespace DOASCalculatorWinUI
         public double ExtInternalPd { get; set; }
         public double SupFanPowerKW { get; set; }
         public double ExtFanPowerKW { get; set; }
+        public double SupElectricalPowerKW { get; set; }
+        public double ExtElectricalPowerKW { get; set; }
         public double SupMotorKW { get; set; }
         public double ExtMotorKW { get; set; }
         public double TotalFanPowerKW => SupFanPowerKW + ExtFanPowerKW;
+        public double TotalElectricalPowerKW => SupElectricalPowerKW + ExtElectricalPowerKW;
     }
 
     public class ProjectData
@@ -127,6 +132,8 @@ namespace DOASCalculatorWinUI
         public string SupOaEsp { get; set; } = "";
         public string ExtEaEsp { get; set; } = "";
         public string FanEff { get; set; } = "";
+        public string MotorEff { get; set; } = "";
+        public string DriveEff { get; set; } = "";
         public string DxEff { get; set; } = "";
         public bool IsIpUnits { get; set; }
     }
