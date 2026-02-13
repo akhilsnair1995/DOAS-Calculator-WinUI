@@ -2,8 +2,7 @@
     x:Class="DOASCalculatorWinUI.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:DOASCalculatorWinUI"
-    xmlns:viewmodels="using:DOASCalculatorWinUI.ViewModels">
+    xmlns:local="using:DOASCalculatorWinUI">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
@@ -17,254 +16,108 @@
 
         <MenuBar Grid.Row="0" Grid.ColumnSpan="2">
             <MenuBarItem Title="File">
-                <MenuFlyoutItem Text="Open Project..." Click="Open_Click"/>
-                <MenuFlyoutItem Text="Save Project..." Click="Save_Click"/>
-                <MenuFlyoutSeparator/>
+                <MenuFlyoutItem Text="Open" Click="Open_Click"/>
+                <MenuFlyoutItem Text="Save" Click="Save_Click"/>
                 <MenuFlyoutItem Text="Exit" Click="Exit_Click"/>
             </MenuBarItem>
             <MenuBarItem Title="Units">
-                <ToggleMenuFlyoutItem x:Name="MenuSI" Text="SI (Metric)" IsChecked="{x:Bind ViewModel.IsSi, Mode=OneWay}" Click="Units_Click"/>
-                <ToggleMenuFlyoutItem x:Name="MenuIP" Text="IP (Imperial)" IsChecked="{x:Bind ViewModel.IsIp, Mode=TwoWay}" Click="Units_Click"/>
+                <MenuFlyoutItem Text="Toggle SI/IP" Click="Units_Click"/>
             </MenuBarItem>
         </MenuBar>
 
-        <!-- Left Pane: Inputs -->
         <Border Grid.Row="1" Grid.Column="0" BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}" BorderThickness="0,0,1,0">
-            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
                 <StackPanel Spacing="24">
-                    <TextBlock Text="System Parameters" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,0,0,4"/>
+                    <TextBlock Text="System Parameters" Style="{StaticResource SubtitleTextBlockStyle}"/>
 
-                    <!-- 1. Outdoor Air Conditions -->
                     <StackPanel Spacing="12">
-                        <TextBlock Text="Outdoor Air Conditions" Style="{StaticResource BodyStrongTextBlockStyle}"/>
-                        <StackPanel>
-                            <NumberBox Header="{x:Bind ViewModel.LabelAltitude, Mode=OneWay}" Value="{x:Bind ViewModel.Altitude, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
-                            <StackPanel Orientation="Horizontal" Visibility="{x:Bind ViewModel.VisibilityAltitude, Mode=OneWay}" Margin="0,4,0,0">
-                                <FontIcon Glyph="&#xEA39;" Foreground="Red" FontSize="12" Margin="0,0,4,0"/>
-                                <TextBlock Text="{x:Bind ViewModel.ErrorAltitude, Mode=OneWay}" Foreground="Red" FontSize="12" TextWrapping="WrapWholeWords"/>
-                            </StackPanel>
-                        </StackPanel>
-                        <Grid ColumnSpacing="12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <NumberBox Header="{x:Bind ViewModel.LabelFlow, Mode=OneWay}" Value="{x:Bind ViewModel.OaFlow, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
-                                <StackPanel Orientation="Horizontal" Visibility="{x:Bind ViewModel.VisibilityOaFlow, Mode=OneWay}" Margin="0,4,0,0">
-                                    <FontIcon Glyph="&#xEA39;" Foreground="Red" FontSize="12" Margin="0,0,4,0"/>
-                                    <TextBlock Text="{x:Bind ViewModel.ErrorOaFlow, Mode=OneWay}" Foreground="Red" FontSize="12" TextWrapping="WrapWholeWords"/>
-                                </StackPanel>
-                            </StackPanel>
-                            <StackPanel Grid.Column="1">
-                                <NumberBox Header="{x:Bind ViewModel.LabelTemp, Mode=OneWay}" Value="{x:Bind ViewModel.OaDb, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
-                                <StackPanel Orientation="Horizontal" Visibility="{x:Bind ViewModel.VisibilityOaDb, Mode=OneWay}" Margin="0,4,0,0">
-                                    <FontIcon Glyph="&#xEA39;" Foreground="Red" FontSize="12" Margin="0,0,4,0"/>
-                                    <TextBlock Text="{x:Bind ViewModel.ErrorOaDb, Mode=OneWay}" Foreground="Red" FontSize="12" TextWrapping="WrapWholeWords"/>
-                                </StackPanel>
-                            </StackPanel>
-                        </Grid>
-                        <StackPanel>
-                            <NumberBox Header="Outdoor WB" Value="{x:Bind ViewModel.OaWb, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
-                            <StackPanel Orientation="Horizontal" Visibility="{x:Bind ViewModel.VisibilityOaWb, Mode=OneWay}" Margin="0,4,0,0">
-                                <FontIcon Glyph="&#xEA39;" Foreground="Red" FontSize="12" Margin="0,0,4,0"/>
-                                <TextBlock Text="{x:Bind ViewModel.ErrorOaWb, Mode=OneWay}" Foreground="Red" FontSize="12" TextWrapping="WrapWholeWords"/>
-                            </StackPanel>
-                        </StackPanel>
+                        <TextBlock Text="Outdoor Conditions" Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                        <NumberBox Header="{x:Bind ViewModel.LabelAltitude, Mode=OneWay}" Value="{x:Bind ViewModel.Altitude, Mode=TwoWay}"/>
+                        <TextBlock Text="{x:Bind ViewModel.ErrorAltitude, Mode=OneWay}" Foreground="Red" FontSize="12" Visibility="{x:Bind BoolToVis(ViewModel.IsErrorAlt), Mode=OneWay}"/>
+                        <NumberBox Header="{x:Bind ViewModel.LabelFlow, Mode=OneWay}" Value="{x:Bind ViewModel.OaFlow, Mode=TwoWay}"/>
+                        <NumberBox Header="DB Temp" Value="{x:Bind ViewModel.OaDb, Mode=TwoWay}"/>
+                        <NumberBox Header="WB Temp" Value="{x:Bind ViewModel.OaWb, Mode=TwoWay}"/>
                     </StackPanel>
 
-                    <!-- 2. Extract Air Conditions -->
                     <StackPanel Spacing="12">
-                        <TextBlock Text="Extract Air Conditions" Style="{StaticResource BodyStrongTextBlockStyle}"/>
-                        <Grid ColumnSpacing="12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <NumberBox Grid.Column="0" Header="Extract Flow" Value="{x:Bind ViewModel.EaFlow, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
-                            <NumberBox Grid.Column="1" Header="Extract DB" Value="{x:Bind ViewModel.EaDb, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
-                        </Grid>
-                        <NumberBox Header="Extract RH (%)" Value="{x:Bind ViewModel.EaRh, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
+                        <TextBlock Text="Extract Air" Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                        <NumberBox Header="Flow" Value="{x:Bind ViewModel.EaFlow, Mode=TwoWay}"/>
+                        <NumberBox Header="DB" Value="{x:Bind ViewModel.EaDb, Mode=TwoWay}"/>
+                        <NumberBox Header="RH %" Value="{x:Bind ViewModel.EaRh, Mode=TwoWay}"/>
                     </StackPanel>
 
-                    <!-- 3. Heat Recovery Section -->
                     <StackPanel Spacing="12">
-                        <TextBlock Text="Heat Recovery" Style="{StaticResource BodyStrongTextBlockStyle}"/>
-                        
-                        <!-- Enthalpy Wheel -->
+                        <TextBlock Text="Recovery" Style="{StaticResource BodyStrongTextBlockStyle}"/>
                         <ToggleSwitch Header="Enthalpy Wheel" IsOn="{x:Bind ViewModel.WheelEnabled, Mode=TwoWay}"/>
-                        <Grid ColumnSpacing="12" Visibility="{x:Bind ViewModel.WheelEnabled, Mode=OneWay}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <NumberBox Header="Sensible Eff (%)" Value="{x:Bind ViewModel.WheelSens, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
-                                <StackPanel Orientation="Horizontal" Visibility="{x:Bind ViewModel.VisibilityWheelSens, Mode=OneWay}" Margin="0,4,0,0">
-                                    <FontIcon Glyph="&#xEA39;" Foreground="Red" FontSize="12" Margin="0,0,4,0"/>
-                                    <TextBlock Text="{x:Bind ViewModel.ErrorWheelSens, Mode=OneWay}" Foreground="Red" FontSize="12" TextWrapping="WrapWholeWords"/>
-                                </StackPanel>
-                            </StackPanel>
-                            <StackPanel Grid.Column="1">
-                                <NumberBox Header="Latent Eff (%)" Value="{x:Bind ViewModel.WheelLat, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
-                                <StackPanel Orientation="Horizontal" Visibility="{x:Bind ViewModel.VisibilityWheelLat, Mode=OneWay}" Margin="0,4,0,0">
-                                    <FontIcon Glyph="&#xEA39;" Foreground="Red" FontSize="12" Margin="0,0,4,0"/>
-                                    <TextBlock Text="{x:Bind ViewModel.ErrorWheelLat, Mode=OneWay}" Foreground="Red" FontSize="12" TextWrapping="WrapWholeWords"/>
-                                </StackPanel>
-                            </StackPanel>
-                        </Grid>
-
-                        <MenuFlyoutSeparator Margin="0,8"/>
-
-                        <!-- Sensible Wheel / Dual Wheel -->
-                        <ToggleSwitch Header="Sensible Wheel (Dual Wheel)" IsOn="{x:Bind ViewModel.DwEnabled, Mode=TwoWay}"/>
-                        <NumberBox Header="Sensible Wheel Eff (%)" Value="{x:Bind ViewModel.DwEff, Mode=TwoWay}" Visibility="{x:Bind ViewModel.DwEnabled, Mode=OneWay}" HorizontalAlignment="Stretch"/>
-
-                        <MenuFlyoutSeparator Margin="0,8"/>
-
-                        <!-- Heat Pipe -->
-                        <ToggleSwitch Header="Wrap-around Heat Pipe" IsOn="{x:Bind ViewModel.HpEnabled, Mode=TwoWay}"/>
-                        <NumberBox Header="Heat Pipe Eff (%)" Value="{x:Bind ViewModel.HpEff, Mode=TwoWay}" Visibility="{x:Bind ViewModel.HpEnabled, Mode=OneWay}" HorizontalAlignment="Stretch"/>
+                        <StackPanel Spacing="12" Visibility="{x:Bind BoolToVis(ViewModel.IsWheelFields), Mode=OneWay}">
+                            <NumberBox Header="Sensible %" Value="{x:Bind ViewModel.WheelSens, Mode=TwoWay}"/>
+                            <NumberBox Header="Latent %" Value="{x:Bind ViewModel.WheelLat, Mode=TwoWay}"/>
+                        </StackPanel>
+                        <ToggleSwitch Header="Sensible Wheel" IsOn="{x:Bind ViewModel.DwEnabled, Mode=TwoWay}"/>
+                        <NumberBox Header="Wheel Eff %" Value="{x:Bind ViewModel.DwEff, Mode=TwoWay}" Visibility="{x:Bind BoolToVis(ViewModel.IsDwFields), Mode=OneWay}"/>
+                        <ToggleSwitch Header="Heat Pipe" IsOn="{x:Bind ViewModel.HpEnabled, Mode=TwoWay}"/>
+                        <NumberBox Header="Pipe Eff %" Value="{x:Bind ViewModel.HpEff, Mode=TwoWay}" Visibility="{x:Bind BoolToVis(ViewModel.IsHpFields), Mode=OneWay}"/>
                     </StackPanel>
 
-                    <!-- 4. Cooling Coil Section -->
                     <StackPanel Spacing="12">
-                        <TextBlock Text="Cooling Coil" Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                        <TextBlock Text="Cooling &amp; Reheat" Style="{StaticResource BodyStrongTextBlockStyle}"/>
                         <ComboBox Header="Coil Type" SelectedIndex="{x:Bind ViewModel.MainCoilTypeIndex, Mode=TwoWay}" HorizontalAlignment="Stretch">
-                            <ComboBoxItem Content="DX / Electric"/>
-                            <ComboBoxItem Content="Chilled Water"/>
+                            <ComboBoxItem Content="DX"/>
+                            <ComboBoxItem Content="Water"/>
                         </ComboBox>
-                        <NumberBox Header="Off-Coil Temp" Value="{x:Bind ViewModel.OffCoil, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
-                        <NumberBox Header="Water Delta T" Value="{x:Bind ViewModel.MainCoilDeltaT, Mode=TwoWay}" Visibility="{x:Bind ViewModel.VisibilityMainCoilWater, Mode=OneWay}" HorizontalAlignment="Stretch"/>
+                        <NumberBox Header="Off-Coil" Value="{x:Bind ViewModel.OffCoil, Mode=TwoWay}"/>
+                        <CheckBox Content="Auto ASHRAE" IsChecked="{x:Bind ViewModel.AutoAshrae, Mode=TwoWay}"/>
+                        <ToggleSwitch Header="Reheat Coil" IsOn="{x:Bind ViewModel.ReheatEnabled, Mode=TwoWay}"/>
+                        <NumberBox Header="Supply Temp" Value="{x:Bind ViewModel.SupplyTemp, Mode=TwoWay}" Visibility="{x:Bind BoolToVis(ViewModel.IsReheatTarget), Mode=OneWay}"/>
                     </StackPanel>
 
-                    <!-- 5. Supplementary Reheat Section -->
-                    <StackPanel Spacing="12">
-                        <TextBlock Text="Supplementary Reheat" Style="{StaticResource BodyStrongTextBlockStyle}"/>
-                        <ToggleSwitch Header="Post-Reheat Coil" IsOn="{x:Bind ViewModel.ReheatEnabled, Mode=TwoWay}"/>
-                        
-                        <StackPanel Spacing="12" Visibility="{x:Bind ViewModel.VisibilityReheatTarget, Mode=OneWay}">
-                            <ComboBox Header="Heating Source" SelectedIndex="{x:Bind ViewModel.ReheatTypeIndex, Mode=TwoWay}" HorizontalAlignment="Stretch">
-                                <ComboBoxItem Content="Electric"/>
-                                <ComboBoxItem Content="Hot Water"/>
-                                <ComboBoxItem Content="Natural Gas"/>
-                            </ComboBox>
-                            
-                            <NumberBox Header="Target Supply Temp" Value="{x:Bind ViewModel.SupplyTemp, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
-                            
-                            <!-- Hot Water Fields -->
-                            <Grid ColumnSpacing="12" Visibility="{x:Bind ViewModel.VisibilityReheatWater, Mode=OneWay}">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <NumberBox Grid.Column="0" Header="Ent. Water" Value="{x:Bind ViewModel.HwEwt, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
-                                <NumberBox Grid.Column="1" Header="Lvg. Water" Value="{x:Bind ViewModel.HwLwt, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
-                            </Grid>
-
-                            <!-- Gas Fields -->
-                            <NumberBox Header="Burner Efficiency (%)" Value="{x:Bind ViewModel.GasEfficiency, Mode=TwoWay}" Visibility="{x:Bind ViewModel.VisibilityReheatGas, Mode=OneWay}" HorizontalAlignment="Stretch"/>
-                        </StackPanel>
-                    </StackPanel>
-
-                    <!-- Fans and Pressure -->
-                    <StackPanel Spacing="12">
-                        <TextBlock Text="Fans and Pressure Drops" Style="{StaticResource BodyStrongTextBlockStyle}"/>
-                        <StackPanel>
-                            <NumberBox Header="Fan Efficiency (%)" Value="{x:Bind ViewModel.FanEff, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
-                            <StackPanel Orientation="Horizontal" Visibility="{x:Bind ViewModel.VisibilityFanEff, Mode=OneWay}" Margin="0,4,0,0">
-                                <FontIcon Glyph="&#xEA39;" Foreground="Red" FontSize="12" Margin="0,0,4,0"/>
-                                <TextBlock Text="{x:Bind ViewModel.ErrorFanEff, Mode=OneWay}" Foreground="Red" FontSize="12" TextWrapping="WrapWholeWords"/>
-                            </StackPanel>
-                        </StackPanel>
-                        <Grid ColumnSpacing="12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <NumberBox Grid.Column="0" Header="Sup ESP" Value="{x:Bind ViewModel.SupEsp, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
-                            <NumberBox Grid.Column="1" Header="Ext ESP" Value="{x:Bind ViewModel.ExtEsp, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
-                        </Grid>
-                        <Grid ColumnSpacing="12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <NumberBox Grid.Column="0" Header="Damper PD" Value="{x:Bind ViewModel.PdDamper, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
-                            <NumberBox Grid.Column="1" Header="Pre-Filter PD" Value="{x:Bind ViewModel.PdFilterPre, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
-                        </Grid>
-                        <Grid ColumnSpacing="12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <NumberBox Grid.Column="0" Header="Main Filter PD" Value="{x:Bind ViewModel.PdFilterMain, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
-                            <NumberBox Grid.Column="1" Header="Cooling Coil PD" Value="{x:Bind ViewModel.PdCoil, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
-                        </Grid>
-                    </StackPanel>
-                    
-                    <Button Content="Recalculate System" Click="Calculate_Click" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" Margin="0,10,0,24"/>
+                    <Button Content="Recalculate" Click="Calculate_Click" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" Margin="0,10,0,24"/>
                 </StackPanel>
             </ScrollViewer>
         </Border>
 
-        <!-- Right Pane: Results -->
         <Grid Grid.Row="1" Grid.Column="1" Padding="24">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-
-            <Grid Margin="0,0,0,24">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0" Spacing="4">
-                    <TextBlock Text="Total Cooling" Style="{StaticResource CaptionTextBlockStyle}"/>
-                    <TextBlock Text="{x:Bind ViewModel.ResCooling, Mode=OneWay}" Style="{StaticResource TitleTextBlockStyle}" Foreground="SteelBlue"/>
-                    <TextBlock Text="{x:Bind ViewModel.ResCoolingBreakdown, Mode=OneWay}" FontSize="12" Foreground="Gray"/>
+            <StackPanel Spacing="20">
+                <TextBlock Text="Design Results" Style="{StaticResource TitleTextBlockStyle}"/>
+                <StackPanel>
+                    <TextBlock Text="Cooling Load" Foreground="SteelBlue" FontWeight="Bold"/>
+                    <TextBlock Text="{x:Bind ViewModel.ResCooling, Mode=OneWay}" FontSize="32" FontWeight="Bold"/>
+                    <TextBlock Text="{x:Bind ViewModel.ResCoolingBreakdown, Mode=OneWay}" FontSize="14" Foreground="Gray"/>
+                    <TextBlock Text="{x:Bind ViewModel.ResDxUnitPower, Mode=OneWay}" FontWeight="Bold" Foreground="DarkGreen"/>
                 </StackPanel>
-                <StackPanel Grid.Column="1" Spacing="4">
-                    <TextBlock Text="Net Reheat Load" Style="{StaticResource CaptionTextBlockStyle}"/>
-                    <TextBlock Text="{x:Bind ViewModel.ResReheat, Mode=OneWay}" Style="{StaticResource TitleTextBlockStyle}" Foreground="DarkMagenta"/>
+                <StackPanel>
+                    <TextBlock Text="Reheat Load" Foreground="DarkOrange" FontWeight="Bold"/>
+                    <TextBlock Text="{x:Bind ViewModel.ResReheat, Mode=OneWay}" FontSize="28" FontWeight="Bold"/>
                 </StackPanel>
-                <StackPanel Grid.Column="2" Spacing="4">
-                    <TextBlock Text="Total Fan Power" Style="{StaticResource CaptionTextBlockStyle}"/>
-                    <TextBlock Text="{x:Bind ViewModel.ResFanPower, Mode=OneWay}" Style="{StaticResource TitleTextBlockStyle}"/>
+                <StackPanel>
+                    <TextBlock Text="Fan Power" FontWeight="Bold"/>
+                    <TextBlock Text="{x:Bind ViewModel.ResFanPower, Mode=OneWay}" FontSize="20" FontWeight="Bold"/>
                     <TextBlock Text="{x:Bind ViewModel.ResFanBreakdown, Mode=OneWay}" FontSize="12" Foreground="Gray"/>
                 </StackPanel>
-            </Grid>
+            </StackPanel>
 
-            <ListView Grid.Row="1" Margin="0,10,0,0" ItemsSource="{x:Bind ViewModel.Schedule, Mode=OneWay}">
-                <ListView.Header>
-                    <Grid Padding="12,8" Background="{ThemeResource LayerFillColorDefaultBrush}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="180"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="Process Step" FontWeight="Bold"/>
-                        <TextBlock Text="Entering State" Grid.Column="1" FontWeight="Bold"/>
-                        <TextBlock Text="Leaving State" Grid.Column="2" FontWeight="Bold"/>
-                    </Grid>
-                </ListView.Header>
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid Padding="12,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="180"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="{Binding Component}" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding Entering}" Grid.Column="1" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding Leaving}" Grid.Column="2" VerticalAlignment="Center"/>
-                        </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
+            <ScrollViewer Grid.Row="1" Margin="0,20,0,0">
+                <ItemsControl ItemsSource="{x:Bind ViewModel.Schedule, Mode=OneWay}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="local:ScheduleItem">
+                            <Grid Padding="10,5" BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="180"/>
+                                    <ColumnDefinition Width="180"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{x:Bind Component, Mode=OneWay}" FontWeight="SemiBold"/>
+                                <TextBlock Text="{x:Bind Entering, Mode=OneWay}" Grid.Column="1" FontFamily="Consolas"/>
+                                <TextBlock Text="{x:Bind Leaving, Mode=OneWay}" Grid.Column="2" FontFamily="Consolas"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
         </Grid>
     </Grid>
 </Window>
