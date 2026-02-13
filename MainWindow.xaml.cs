@@ -18,18 +18,18 @@ namespace DOASCalculatorWinUI
         {
             this.InitializeComponent();
             this.Title = "DOAS Sizing Calculator (WinUI 3)";
-            Calculate_Click(null, null);
+            Calculate_Click(this, null);
         }
 
-        private void Input_Changed(object sender, object e) => Calculate_Click(null, null);
+        private void Input_Changed(object? sender, object? e) => Calculate_Click(this, null);
 
-        private void Calculate_Click(object sender, RoutedEventArgs? e)
+        private void Calculate_Click(object? sender, RoutedEventArgs? e)
         {
             if (NumOaFlow == null || _isInternalUpdate) return;
 
             try {
                 var inputs = new SystemInputs {
-                    IsHeatingMode = false,
+                    IsHeatingMode = TogHeating.IsOn,
                     Altitude = _isIp ? Units.FtToM(NumAltitude.Value) : NumAltitude.Value,
                     OaFlow = _isIp ? Units.CfmToLps(NumOaFlow.Value) : NumOaFlow.Value,
                     OaDb = _isIp ? Units.FtoC(NumOaDb.Value) : NumOaDb.Value,
@@ -51,7 +51,12 @@ namespace DOASCalculatorWinUI
                     TargetSupplyTemp = _isIp ? Units.FtoC(NumSupplyTemp.Value) : NumSupplyTemp.Value,
                     SupOaEsp = _isIp ? NumSupEsp.Value / 0.00401463 : NumSupEsp.Value,
                     ExtEaEsp = _isIp ? NumExtEsp.Value / 0.00401463 : NumExtEsp.Value,
-                    FanEff = NumFanEff.Value
+                    FanEff = NumFanEff.Value,
+
+                    PdDamper = _isIp ? NumPdDamper.Value / 0.00401463 : NumPdDamper.Value,
+                    PdFilterPre = _isIp ? NumPdFilterPre.Value / 0.00401463 : NumPdFilterPre.Value,
+                    PdFilterMain = _isIp ? NumPdFilterMain.Value / 0.00401463 : NumPdFilterMain.Value,
+                    PdCoil = _isIp ? NumPdCoil.Value / 0.00401463 : NumPdCoil.Value
                 };
 
                 var results = DOASEngine.Process(inputs);
@@ -98,6 +103,10 @@ namespace DOASCalculatorWinUI
             NumSupplyTemp.Value = toIp ? Units.CtoF(NumSupplyTemp.Value) : Units.FtoC(NumSupplyTemp.Value);
             NumSupEsp.Value = toIp ? Units.PaToInWg(NumSupEsp.Value) : Units.InWgToPa(NumSupEsp.Value);
             NumExtEsp.Value = toIp ? Units.PaToInWg(NumExtEsp.Value) : Units.InWgToPa(NumExtEsp.Value);
+            NumPdDamper.Value = toIp ? Units.PaToInWg(NumPdDamper.Value) : Units.InWgToPa(NumPdDamper.Value);
+            NumPdFilterPre.Value = toIp ? Units.PaToInWg(NumPdFilterPre.Value) : Units.InWgToPa(NumPdFilterPre.Value);
+            NumPdFilterMain.Value = toIp ? Units.PaToInWg(NumPdFilterMain.Value) : Units.InWgToPa(NumPdFilterMain.Value);
+            NumPdCoil.Value = toIp ? Units.PaToInWg(NumPdCoil.Value) : Units.InWgToPa(NumPdCoil.Value);
 
             NumAltitude.Header = toIp ? "Altitude (ft)" : "Altitude (m)";
             NumOaFlow.Header = toIp ? "OA Flow (CFM)" : "OA Flow (L/s)";
@@ -109,9 +118,13 @@ namespace DOASCalculatorWinUI
             NumSupplyTemp.Header = toIp ? "Supply (°F)" : "Supply (°C)";
             NumSupEsp.Header = toIp ? "Sup ESP (in.wg)" : "Sup ESP (Pa)";
             NumExtEsp.Header = toIp ? "Ext ESP (in.wg)" : "Ext ESP (Pa)";
+            NumPdDamper.Header = toIp ? "Damper (in.wg)" : "Damper (Pa)";
+            NumPdFilterPre.Header = toIp ? "Pre-Filter (in.wg)" : "Pre-Filter (Pa)";
+            NumPdFilterMain.Header = toIp ? "Main Filter (in.wg)" : "Main Filter (Pa)";
+            NumPdCoil.Header = toIp ? "Cooling Coil (in.wg)" : "Cooling Coil (Pa)";
 
             _isInternalUpdate = false;
-            Calculate_Click(null, null);
+            Calculate_Click(this, null);
         }
 
         private void Exit_Click(object sender, RoutedEventArgs e) => Application.Current.Exit();

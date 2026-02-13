@@ -30,6 +30,7 @@
 
                     <StackPanel Spacing="8">
                         <TextBlock Text="Project Context" Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                        <ToggleSwitch x:Name="TogHeating" Header="Heating Mode" IsOn="False" Toggled="Input_Changed"/>
                         <NumberBox x:Name="NumAltitude" Header="Altitude (m)" Value="0" ValueChanged="Input_Changed" HorizontalAlignment="Stretch"/>
                     </StackPanel>
 
@@ -119,6 +120,26 @@
                             </Grid.ColumnDefinitions>
                             <NumberBox x:Name="NumSupEsp" Grid.Column="0" Header="Sup ESP (Pa)" Value="500" ValueChanged="Input_Changed" HorizontalAlignment="Stretch"/>
                             <NumberBox x:Name="NumExtEsp" Grid.Column="1" Header="Ext ESP (Pa)" Value="500" ValueChanged="Input_Changed" HorizontalAlignment="Stretch"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Internal Pressure Drops (Pa)" Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <NumberBox x:Name="NumPdDamper" Grid.Column="0" Header="Damper" Value="50" ValueChanged="Input_Changed" HorizontalAlignment="Stretch"/>
+                            <NumberBox x:Name="NumPdFilterPre" Grid.Column="1" Header="Pre-Filter" Value="100" ValueChanged="Input_Changed" HorizontalAlignment="Stretch"/>
+                        </Grid>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <NumberBox x:Name="NumPdFilterMain" Grid.Column="0" Header="Main Filter" Value="250" ValueChanged="Input_Changed" HorizontalAlignment="Stretch"/>
+                            <NumberBox x:Name="NumPdCoil" Grid.Column="1" Header="Cooling Coil" Value="250" ValueChanged="Input_Changed" HorizontalAlignment="Stretch"/>
                         </Grid>
                     </StackPanel>
                     

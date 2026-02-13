@@ -54,6 +54,12 @@ namespace DOASCalculatorWinUI
         public double SupOaEsp { get; set; }
         public double ExtEaEsp { get; set; }
         public double FanEff { get; set; }
+
+        // Customizable Pressure Drops (Pa)
+        public double PdDamper { get; set; } = 50;
+        public double PdFilterPre { get; set; } = 100;
+        public double PdFilterMain { get; set; } = 250;
+        public double PdCoil { get; set; } = 250;
     }
 
     public class ProcessStep

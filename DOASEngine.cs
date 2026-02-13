@@ -133,32 +133,32 @@ namespace DOASCalculatorWinUI
                 current = next;
             }
 
-            // 6. Internal Pressure Drop Estimation (Matched to Daikin FAHU Cuttshhet)
-            double damperPd = 50;
-            double preFilterG3 = 100;
-            double bagFilterF7 = 250; 
+            // 6. Internal Pressure Drop Estimation
             double wheelPd = input.WheelEnabled ? 250 : 0;
-            double coilPd = 250; 
             double recoverySensPd = (input.DoubleWheelEnabled || input.HpEnabled) ? 150 : 0;
             double reheatPd = input.ReheatEnabled ? 50 : 0;
 
-            res.SupInternalPd = damperPd + preFilterG3 + bagFilterF7 + wheelPd + coilPd + recoverySensPd + reheatPd;
-            res.ExtInternalPd = damperPd + preFilterG3 + wheelPd; 
+            res.SupInternalPd = input.PdDamper + input.PdFilterPre + input.PdFilterMain + wheelPd + input.PdCoil + recoverySensPd + reheatPd;
+            res.ExtInternalPd = input.PdDamper + input.PdFilterPre + wheelPd; 
 
             // 7. Fan Power Calculation
+            // Using local density at the fan location for accurate absorbed power
             double supTsp = input.SupOaEsp + res.SupInternalPd;
-            double supDensity = Psychrometrics.GetDensity(current.T);
-            double qSup = (input.OaFlow / 1000.0) * (res.AirDensity / supDensity); 
-            res.SupFanPowerKW = (qSup * supTsp) / (input.FanEff / 100.0) / 1000.0;
+            double supFanDensity = Psychrometrics.GetDensity(current.T); // Draw-thru fan (after reheat)
+            double qSupLocal = mDot / supFanDensity; 
+            res.SupFanPowerKW = (qSupLocal * supTsp) / (input.FanEff / 100.0) / 1000.0;
 
             double extTsp = input.ExtEaEsp + res.ExtInternalPd;
-            double extDensity = Psychrometrics.GetDensity(input.EaDb);
-            double qExt = (input.EaFlow / 1000.0) * (Psychrometrics.GetDensity(input.EaDb) / extDensity); 
-            res.ExtFanPowerKW = (qExt * extTsp) / (input.FanEff / 100.0) / 1000.0;
+            // Exhaust fan is typically after the wheel in the exhaust stream
+            // Simplification: use EA density
+            double extFanDensity = Psychrometrics.GetDensity(input.EaDb);
+            double qExtLocal = (input.EaFlow / 1000.0) * (Psychrometrics.GetDensity(input.EaDb) / extFanDensity); 
+            res.ExtFanPowerKW = (qExtLocal * extTsp) / (input.FanEff / 100.0) / 1000.0;
 
-            // 8. Motor Selection (Standard Sizes: 0.75, 1.1, 1.5, 2.2, 3.0, 4.0, 5.5, 7.5, 11, 15...)
-            res.SupMotorKW = SelectMotor(res.SupFanPowerKW / 0.85); // 0.85 factor for motor efficiency/margin
-            res.ExtMotorKW = SelectMotor(res.ExtFanPowerKW / 0.85);
+            // 8. Motor Selection
+            // Using a more standard 15% margin for motor sizing
+            res.SupMotorKW = SelectMotor(res.SupFanPowerKW * 1.15); 
+            res.ExtMotorKW = SelectMotor(res.ExtFanPowerKW * 1.15);
 
             return res;
         }
