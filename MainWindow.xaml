@@ -16,7 +16,12 @@
         </Grid.ColumnDefinitions>
 
         <MenuBar Grid.Row="0" Grid.ColumnSpan="2">
-            <MenuBarItem Title="File"><MenuFlyoutItem Text="Exit" Click="Exit_Click"/></MenuBarItem>
+            <MenuBarItem Title="File">
+                <MenuFlyoutItem Text="Open Project..." Click="Open_Click"/>
+                <MenuFlyoutItem Text="Save Project..." Click="Save_Click"/>
+                <MenuFlyoutSeparator/>
+                <MenuFlyoutItem Text="Exit" Click="Exit_Click"/>
+            </MenuBarItem>
             <MenuBarItem Title="Units">
                 <ToggleMenuFlyoutItem x:Name="MenuSI" Text="SI (Metric)" IsChecked="{x:Bind ViewModel.IsSi, Mode=OneWay}" Click="Units_Click"/>
                 <ToggleMenuFlyoutItem x:Name="MenuIP" Text="IP (Imperial)" IsChecked="{x:Bind ViewModel.IsIp, Mode=TwoWay}" Click="Units_Click"/>
@@ -125,14 +130,41 @@
                     <!-- 4. Cooling Coil Section -->
                     <StackPanel Spacing="12">
                         <TextBlock Text="Cooling Coil" Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                        <ComboBox Header="Coil Type" SelectedIndex="{x:Bind ViewModel.MainCoilTypeIndex, Mode=TwoWay}" HorizontalAlignment="Stretch">
+                            <ComboBoxItem Content="DX / Electric"/>
+                            <ComboBoxItem Content="Chilled Water"/>
+                        </ComboBox>
                         <NumberBox Header="Off-Coil Temp" Value="{x:Bind ViewModel.OffCoil, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
+                        <NumberBox Header="Water Delta T" Value="{x:Bind ViewModel.MainCoilDeltaT, Mode=TwoWay}" Visibility="{x:Bind ViewModel.VisibilityMainCoilWater, Mode=OneWay}" HorizontalAlignment="Stretch"/>
                     </StackPanel>
 
                     <!-- 5. Supplementary Reheat Section -->
                     <StackPanel Spacing="12">
                         <TextBlock Text="Supplementary Reheat" Style="{StaticResource BodyStrongTextBlockStyle}"/>
                         <ToggleSwitch Header="Post-Reheat Coil" IsOn="{x:Bind ViewModel.ReheatEnabled, Mode=TwoWay}"/>
-                        <NumberBox Header="Target Supply Temp" Value="{x:Bind ViewModel.SupplyTemp, Mode=TwoWay}" Visibility="{x:Bind ViewModel.ReheatEnabled, Mode=OneWay}" HorizontalAlignment="Stretch"/>
+                        
+                        <StackPanel Spacing="12" Visibility="{x:Bind ViewModel.VisibilityReheatTarget, Mode=OneWay}">
+                            <ComboBox Header="Heating Source" SelectedIndex="{x:Bind ViewModel.ReheatTypeIndex, Mode=TwoWay}" HorizontalAlignment="Stretch">
+                                <ComboBoxItem Content="Electric"/>
+                                <ComboBoxItem Content="Hot Water"/>
+                                <ComboBoxItem Content="Natural Gas"/>
+                            </ComboBox>
+                            
+                            <NumberBox Header="Target Supply Temp" Value="{x:Bind ViewModel.SupplyTemp, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
+                            
+                            <!-- Hot Water Fields -->
+                            <Grid ColumnSpacing="12" Visibility="{x:Bind ViewModel.VisibilityReheatWater, Mode=OneWay}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <NumberBox Grid.Column="0" Header="Ent. Water" Value="{x:Bind ViewModel.HwEwt, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
+                                <NumberBox Grid.Column="1" Header="Lvg. Water" Value="{x:Bind ViewModel.HwLwt, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
+                            </Grid>
+
+                            <!-- Gas Fields -->
+                            <NumberBox Header="Burner Efficiency (%)" Value="{x:Bind ViewModel.GasEfficiency, Mode=TwoWay}" Visibility="{x:Bind ViewModel.VisibilityReheatGas, Mode=OneWay}" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
                     </StackPanel>
 
                     <!-- Fans and Pressure -->

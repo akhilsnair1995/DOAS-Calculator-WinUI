@@ -93,6 +93,13 @@ namespace DOASCalculatorWinUI
 
             res.Steps.Add(new ProcessStep { Component = "Cooling Coil", Entering = current, Leaving = coilOut });
             res.ChartPoints[coilOut.Name] = coilOut;
+
+            // Main Coil Hydronics
+            if (input.MainCoilType == CoilType.Water && input.MainCoilDeltaT > 0)
+            {
+                res.MainCoilWaterFlow = res.TotalCooling / (4.186 * input.MainCoilDeltaT); // L/s
+            }
+
             current = coilOut; ptIdx++;
 
             // 4. Recovery Reheat (Scientist's First Law Correction)
@@ -114,6 +121,19 @@ namespace DOASCalculatorWinUI
                 AirState next = new AirState(input.TargetSupplyTemp, current.W, ptIdx.ToString());
                 res.Steps.Add(new ProcessStep { Component = "Supplementary Reheat", Entering = current, Leaving = next });
                 res.ChartPoints[next.Name] = next;
+
+                // Reheat Source Modeling
+                if (input.ReheatType == ReheatSource.HotWater)
+                {
+                    double dT = Math.Abs(input.HwEwt - input.HwLwt);
+                    if (dT > 0) res.ReheatWaterFlow = res.ReheatLoad / (4.186 * dT);
+                }
+                else if (input.ReheatType == ReheatSource.Gas && input.GasEfficiency > 0)
+                {
+                    // Approx 10kWh per m3 of natural gas
+                    res.GasConsumption = (res.ReheatLoad / (input.GasEfficiency / 100.0)) / 10.0 * 3600 / 3600; // Simplified m3/h
+                }
+
                 current = next;
             }
 

@@ -75,16 +75,55 @@ namespace DOASCalculatorWinUI.ViewModels
         public double HpEff { get => _hpEff; set { if (SetProperty(ref _hpEff, value)) ValidateAndCalculate(); } }
 
         private double _offCoil = 12.0;
-        public double OffCoil { get => _offCoil; set { if (SetProperty(ref _offCoil, value)) ValidateAndCalculate(); } }
+        public double OffCoil { get => _offCoil; set { if (SetProperty(ref _offCoil, Clamp(value, 4, 30))) ValidateAndCalculate(); } }
+
+        private CoilType _mainCoilType = CoilType.Dx;
+        public CoilType MainCoilType { get => _mainCoilType; set { if (SetProperty(ref _mainCoilType, value)) { OnPropertyChanged(nameof(IsMainCoilWater)); OnPropertyChanged(nameof(MainCoilTypeIndex)); ValidateAndCalculate(); } } }
+        public bool IsMainCoilWater => MainCoilType == CoilType.Water;
+
+        public int MainCoilTypeIndex { get => (int)MainCoilType; set => MainCoilType = (CoilType)value; }
+
+        private double _mainCoilDeltaT = 5.5;
+        public double MainCoilDeltaT { get => _mainCoilDeltaT; set { if (SetProperty(ref _mainCoilDeltaT, Clamp(value, 1, 20))) ValidateAndCalculate(); } }
 
         private double _fanEff = 60;
-        public double FanEff { get => _fanEff; set { if (SetProperty(ref _fanEff, value)) ValidateAndCalculate(); } }
+        public double FanEff { get => _fanEff; set { if (SetProperty(ref _fanEff, Clamp(value, 10, 95))) ValidateAndCalculate(); } }
 
         private bool _reheatEnabled = false;
-        public bool ReheatEnabled { get => _reheatEnabled; set { if (SetProperty(ref _reheatEnabled, value)) ValidateAndCalculate(); } }
+        public bool ReheatEnabled { get => _reheatEnabled; set { if (SetProperty(ref _reheatEnabled, value)) { OnPropertyChanged(nameof(VisibilityReheatTarget)); ValidateAndCalculate(); } } }
+
+        private ReheatSource _reheatType = ReheatSource.Electric;
+        public ReheatSource ReheatType { get => _reheatType; set { if (SetProperty(ref _reheatType, value)) { OnPropertyChanged(nameof(ReheatTypeIndex)); UpdateReheatVisibilities(); ValidateAndCalculate(); } } }
+
+        public int ReheatTypeIndex { get => (int)ReheatType; set => ReheatType = (ReheatSource)value; }
 
         private double _supplyTemp = 20.0;
-        public double SupplyTemp { get => _supplyTemp; set { if (SetProperty(ref _supplyTemp, value)) ValidateAndCalculate(); } }
+        public double SupplyTemp { get => _supplyTemp; set { if (SetProperty(ref _supplyTemp, Clamp(value, 10, 50))) ValidateAndCalculate(); } }
+
+        private double _hwEwt = 80;
+        public double HwEwt { get => _hwEwt; set { if (SetProperty(ref _hwEwt, Clamp(value, 30, 90))) ValidateAndCalculate(); } }
+
+        private double _hwLwt = 60;
+        public double HwLwt { get => _hwLwt; set { if (SetProperty(ref _hwLwt, Clamp(value, 20, 85))) ValidateAndCalculate(); } }
+
+        private double _gasEfficiency = 80;
+        public double GasEfficiency { get => _gasEfficiency; set { if (SetProperty(ref _gasEfficiency, Clamp(value, 50, 99))) ValidateAndCalculate(); } }
+
+        public bool IsReheatWater => ReheatType == ReheatSource.HotWater;
+        public bool IsReheatGas => ReheatType == ReheatSource.Gas;
+
+        private void UpdateReheatVisibilities()
+        {
+            OnPropertyChanged(nameof(IsReheatWater));
+            OnPropertyChanged(nameof(IsReheatGas));
+            OnPropertyChanged(nameof(VisibilityReheatWater));
+            OnPropertyChanged(nameof(VisibilityReheatGas));
+        }
+
+        public Visibility VisibilityMainCoilWater => IsMainCoilWater ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility VisibilityReheatWater => (ReheatEnabled && IsReheatWater) ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility VisibilityReheatGas => (ReheatEnabled && IsReheatGas) ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility VisibilityReheatTarget => ReheatEnabled ? Visibility.Visible : Visibility.Collapsed;
 
         private double _supEsp = 500;
         public double SupEsp { get => _supEsp; set { if (SetProperty(ref _supEsp, value)) ValidateAndCalculate(); } }
@@ -225,8 +264,14 @@ namespace DOASCalculatorWinUI.ViewModels
                     HpEnabled = HpEnabled,
                     HpEff = HpEff,
                     OffCoilTemp = IsIp ? Units.FtoC(OffCoil) : OffCoil,
+                    MainCoilType = MainCoilType,
+                    MainCoilDeltaT = IsIp ? MainCoilDeltaT / 1.8 : MainCoilDeltaT,
                     ReheatEnabled = ReheatEnabled,
+                    ReheatType = ReheatType,
                     TargetSupplyTemp = IsIp ? Units.FtoC(SupplyTemp) : SupplyTemp,
+                    HwEwt = IsIp ? Units.FtoC(HwEwt) : HwEwt,
+                    HwLwt = IsIp ? Units.FtoC(HwLwt) : HwLwt,
+                    GasEfficiency = GasEfficiency,
                     SupOaEsp = IsIp ? Units.InWgToPa(SupEsp) : SupEsp,
                     ExtEaEsp = IsIp ? Units.InWgToPa(ExtEsp) : ExtEsp,
                     FanEff = FanEff,
@@ -241,16 +286,28 @@ namespace DOASCalculatorWinUI.ViewModels
                 if (IsIp)
                 {
                     ResCooling = $"{Units.KwToMbh(results.TotalCooling):F1} MBH";
-                    ResCoolingBreakdown = $"S: {Units.KwToMbh(results.SensibleCooling):F1} | L: {Units.KwToMbh(results.LatentCooling):F1} MBH";
+                    string breakdown = $"S: {Units.KwToMbh(results.SensibleCooling):F1} | L: {Units.KwToMbh(results.LatentCooling):F1} MBH";
+                    if (IsMainCoilWater) breakdown += $" | {results.MainCoilWaterFlow * 15.85:F1} GPM";
+                    ResCoolingBreakdown = breakdown;
+
                     ResReheat = $"{Units.KwToMbh(results.ReheatLoad):F1} MBH";
+                    if (IsReheatWater) ResReheat += $" ({results.ReheatWaterFlow * 15.85:F1} GPM)";
+                    else if (IsReheatGas) ResReheat += $" ({results.GasConsumption * 35.31:F1} SCFH)";
+
                     ResFanPower = $"{results.TotalFanPowerKW:F2} kW";
                     ResFanBreakdown = $"S: {results.SupFanPowerKW:F2} | E: {results.ExtFanPowerKW:F2} kW";
                 }
                 else
                 {
                     ResCooling = $"{results.TotalCooling:F1} kW";
-                    ResCoolingBreakdown = $"S: {results.SensibleCooling:F1} | L: {results.LatentCooling:F1} kW";
+                    string breakdown = $"S: {results.SensibleCooling:F1} | L: {results.LatentCooling:F1} kW";
+                    if (IsMainCoilWater) breakdown += $" | {results.MainCoilWaterFlow:F2} L/s";
+                    ResCoolingBreakdown = breakdown;
+
                     ResReheat = $"{results.ReheatLoad:F1} kW";
+                    if (IsReheatWater) ResReheat += $" ({results.ReheatWaterFlow:F2} L/s)";
+                    else if (IsReheatGas) ResReheat += $" ({results.GasConsumption:F2} m3/h)";
+
                     ResFanPower = $"{results.TotalFanPowerKW:F2} kW";
                     ResFanBreakdown = $"S: {results.SupFanPowerKW:F2} | E: {results.ExtFanPowerKW:F2} kW";
                 }
@@ -267,6 +324,82 @@ namespace DOASCalculatorWinUI.ViewModels
                 }
             }
             catch { }
+        }
+
+        public void LoadProject(ProjectData data)
+        {
+            _isIp = data.IsIpUnits;
+            Altitude = double.TryParse(data.Altitude, out var a) ? a : 0;
+            OaFlow = double.TryParse(data.OaFlow, out var of) ?  of : 1000;
+            OaDb = double.TryParse(data.OaDb, out var odb) ? odb : 35;
+            OaWb = double.TryParse(data.OaWb, out var owb) ? owb : 28;
+            WheelEnabled = data.WheelEnabled;
+            WheelSens = double.TryParse(data.WheelSens, out var ws) ? ws : 75;
+            WheelLat = double.TryParse(data.WheelLat, out var wl) ? wl : 70;
+            EaFlow = double.TryParse(data.EaFlow, out var ef) ? ef : 800;
+            EaDb = double.TryParse(data.EaDb, out var edb) ? edb : 24;
+            EaRh = double.TryParse(data.EaRh, out var erh) ? erh : 50;
+            DwEnabled = data.DoubleWheelEnabled;
+            DwEff = double.TryParse(data.DwSens, out var ds) ? ds : 65;
+            HpEnabled = data.HpEnabled;
+            HpEff = double.TryParse(data.HpEff, out var hs) ? hs : 45;
+            OffCoil = double.TryParse(data.OffCoil, out var oc) ? oc : 12;
+            MainCoilType = (CoilType)data.CoilTypeIndex;
+            MainCoilDeltaT = double.TryParse(data.CoilDeltaT, out var cdt) ? cdt : 5.5;
+            ReheatEnabled = data.ReheatEnabled;
+            SupplyTemp = double.TryParse(data.SupplyTemp, out var st) ? st : 20;
+            ReheatType = (ReheatSource)data.ReheatTypeIndex;
+            HwEwt = double.TryParse(data.HwEwt, out var ewt) ? ewt : 80;
+            HwLwt = double.TryParse(data.HwLwt, out var lwt) ? lwt : 60;
+            GasEfficiency = double.TryParse(data.GasEff, out var ge) ? ge : 80;
+            SupEsp = double.TryParse(data.SupOaEsp, out var se) ? se : 500;
+            ExtEsp = double.TryParse(data.ExtEaEsp, out var ee) ? ee : 500;
+            FanEff = double.TryParse(data.FanEff, out var fe) ? fe : 60;
+
+            OnPropertyChanged(nameof(IsIp));
+            OnPropertyChanged(nameof(IsSi));
+            UpdateUnitLabels();
+            UpdateReheatVisibilities();
+            ValidateAndCalculate();
+        }
+
+        public ProjectData GetProjectData()
+        {
+            return new ProjectData
+            {
+                IsIpUnits = IsIp,
+                Altitude = Altitude.ToString(),
+                OaFlow = OaFlow.ToString(),
+                OaDb = OaDb.ToString(),
+                OaWb = OaWb.ToString(),
+                WheelEnabled = WheelEnabled,
+                WheelSens = WheelSens.ToString(),
+                WheelLat = WheelLat.ToString(),
+                EaFlow = EaFlow.ToString(),
+                EaDb = EaDb.ToString(),
+                EaRh = EaRh.ToString(),
+                DoubleWheelEnabled = DwEnabled,
+                DwSens = DwEff.ToString(),
+                HpEnabled = HpEnabled,
+                HpEff = HpEff.ToString(),
+                OffCoil = OffCoil.ToString(),
+                CoilTypeIndex = (int)MainCoilType,
+                CoilDeltaT = MainCoilDeltaT.ToString(),
+                ReheatEnabled = ReheatEnabled,
+                SupplyTemp = SupplyTemp.ToString(),
+                ReheatTypeIndex = (int)ReheatType,
+                HwEwt = HwEwt.ToString(),
+                HwLwt = HwLwt.ToString(),
+                GasEff = GasEfficiency.ToString(),
+                SupOaEsp = SupEsp.ToString(),
+                ExtEaEsp = ExtEsp.ToString(),
+                FanEff = FanEff.ToString()
+            };
+        }
+
+        private double Clamp(double value, double min, double max)
+        {
+            return Math.Max(min, Math.Min(max, value));
         }
 
         private void UpdateUnitLabels()

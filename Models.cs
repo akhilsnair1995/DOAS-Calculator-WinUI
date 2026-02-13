@@ -24,6 +24,9 @@ namespace DOASCalculatorWinUI
             $"{Units.CtoF(T):F1}°F / {Units.CtoF(Twb):F1}°F / {Rh:F0}%";
     }
 
+    public enum CoilType { Dx, Water }
+    public enum ReheatSource { Electric, HotWater, Gas }
+
     public class SystemInputs
     {
         public double OaFlow { get; set; }
@@ -45,9 +48,15 @@ namespace DOASCalculatorWinUI
         public double HpEff { get; set; }
 
         public double OffCoilTemp { get; set; }
+        public CoilType MainCoilType { get; set; }
+        public double MainCoilDeltaT { get; set; }
         
         public bool ReheatEnabled { get; set; }
         public double TargetSupplyTemp { get; set; }
+        public ReheatSource ReheatType { get; set; }
+        public double HwEwt { get; set; }
+        public double HwLwt { get; set; }
+        public double GasEfficiency { get; set; }
 
         // Compliance
         public double SupOaEsp { get; set; }
@@ -63,11 +72,9 @@ namespace DOASCalculatorWinUI
 
     public class ProcessStep
     {
-        public string Component { get; set; }
-        public AirState Entering { get; set; }
-        public AirState Leaving { get; set; }
-        // WinUI uses Microsoft.UI.Colors, not System.Drawing.Color, but for model simplicity we can use string hex or keep simple
-        // Removing Color dependency from Model for clean separation is best, but for now let's just comment it out or change to string
+        public string Component { get; set; } = "";
+        public AirState Entering { get; set; } = new AirState(0,0);
+        public AirState Leaving { get; set; } = new AirState(0,0);
         public string HighlightColorHex { get; set; } = "#000000"; 
     }
 
@@ -78,8 +85,10 @@ namespace DOASCalculatorWinUI
         public double TotalCooling { get; set; } // kW
         public double SensibleCooling { get; set; }
         public double LatentCooling { get; set; }
-        public double TotalHeating { get; set; } // kW
-        public double ReheatLoad { get; set; }
+        public double MainCoilWaterFlow { get; set; } // L/s
+        public double ReheatLoad { get; set; } // kW
+        public double ReheatWaterFlow { get; set; } // L/s
+        public double GasConsumption { get; set; } // m3/h (approx)
         public double AirDensity { get; set; }
         public double SupInternalPd { get; set; }
         public double ExtInternalPd { get; set; }
