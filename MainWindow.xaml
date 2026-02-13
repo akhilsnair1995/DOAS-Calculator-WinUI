@@ -31,7 +31,13 @@
 
                     <StackPanel Spacing="8">
                         <TextBlock Text="Project Context" Style="{StaticResource BodyStrongTextBlockStyle}"/>
-                        <NumberBox Header="{x:Bind ViewModel.LabelAltitude, Mode=OneWay}" Value="{x:Bind ViewModel.Altitude, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
+                        <StackPanel>
+                            <NumberBox Header="{x:Bind ViewModel.LabelAltitude, Mode=OneWay}" Value="{x:Bind ViewModel.Altitude, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
+                            <StackPanel Orientation="Horizontal" Visibility="{x:Bind ViewModel.VisibilityAltitude, Mode=OneWay}" Margin="0,4,0,0">
+                                <FontIcon Glyph="&#xEA39;" Foreground="Red" FontSize="12" Margin="0,0,4,0"/>
+                                <TextBlock Text="{x:Bind ViewModel.ErrorAltitude, Mode=OneWay}" Foreground="Red" FontSize="12" TextWrapping="WrapWholeWords"/>
+                            </StackPanel>
+                        </StackPanel>
                     </StackPanel>
 
                     <StackPanel Spacing="12">
@@ -41,15 +47,33 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <NumberBox Grid.Column="0" Header="{x:Bind ViewModel.LabelFlow, Mode=OneWay}" Value="{x:Bind ViewModel.OaFlow, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
-                            <NumberBox Grid.Column="1" Header="{x:Bind ViewModel.LabelTemp, Mode=OneWay}" Value="{x:Bind ViewModel.OaDb, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
+                            <StackPanel Grid.Column="0">
+                                <NumberBox Header="{x:Bind ViewModel.LabelFlow, Mode=OneWay}" Value="{x:Bind ViewModel.OaFlow, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
+                                <StackPanel Orientation="Horizontal" Visibility="{x:Bind ViewModel.VisibilityOaFlow, Mode=OneWay}" Margin="0,4,0,0">
+                                    <FontIcon Glyph="&#xEA39;" Foreground="Red" FontSize="12" Margin="0,0,4,0"/>
+                                    <TextBlock Text="{x:Bind ViewModel.ErrorOaFlow, Mode=OneWay}" Foreground="Red" FontSize="12" TextWrapping="WrapWholeWords"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <NumberBox Header="{x:Bind ViewModel.LabelTemp, Mode=OneWay}" Value="{x:Bind ViewModel.OaDb, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
+                                <StackPanel Orientation="Horizontal" Visibility="{x:Bind ViewModel.VisibilityOaDb, Mode=OneWay}" Margin="0,4,0,0">
+                                    <FontIcon Glyph="&#xEA39;" Foreground="Red" FontSize="12" Margin="0,0,4,0"/>
+                                    <TextBlock Text="{x:Bind ViewModel.ErrorOaDb, Mode=OneWay}" Foreground="Red" FontSize="12" TextWrapping="WrapWholeWords"/>
+                                </StackPanel>
+                            </StackPanel>
                         </Grid>
                         <Grid ColumnSpacing="12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <NumberBox Grid.Column="0" Header="OA WB" Value="{x:Bind ViewModel.OaWb, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
+                            <StackPanel Grid.Column="0">
+                                <NumberBox Header="OA WB" Value="{x:Bind ViewModel.OaWb, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
+                                <StackPanel Orientation="Horizontal" Visibility="{x:Bind ViewModel.VisibilityOaWb, Mode=OneWay}" Margin="0,4,0,0">
+                                    <FontIcon Glyph="&#xEA39;" Foreground="Red" FontSize="12" Margin="0,0,4,0"/>
+                                    <TextBlock Text="{x:Bind ViewModel.ErrorOaWb, Mode=OneWay}" Foreground="Red" FontSize="12" TextWrapping="WrapWholeWords"/>
+                                </StackPanel>
+                            </StackPanel>
                             <NumberBox Grid.Column="1" Header="EA RH (%)" Value="{x:Bind ViewModel.EaRh, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
                         </Grid>
                         <Grid ColumnSpacing="12">
@@ -70,8 +94,20 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <NumberBox Grid.Column="0" Header="Sensible Eff (%)" Value="{x:Bind ViewModel.WheelSens, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
-                            <NumberBox Grid.Column="1" Header="Latent Eff (%)" Value="{x:Bind ViewModel.WheelLat, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
+                            <StackPanel Grid.Column="0">
+                                <NumberBox Header="Sensible Eff (%)" Value="{x:Bind ViewModel.WheelSens, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
+                                <StackPanel Orientation="Horizontal" Visibility="{x:Bind ViewModel.VisibilityWheelSens, Mode=OneWay}" Margin="0,4,0,0">
+                                    <FontIcon Glyph="&#xEA39;" Foreground="Red" FontSize="12" Margin="0,0,4,0"/>
+                                    <TextBlock Text="{x:Bind ViewModel.ErrorWheelSens, Mode=OneWay}" Foreground="Red" FontSize="12" TextWrapping="WrapWholeWords"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <NumberBox Header="Latent Eff (%)" Value="{x:Bind ViewModel.WheelLat, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
+                                <StackPanel Orientation="Horizontal" Visibility="{x:Bind ViewModel.VisibilityWheelLat, Mode=OneWay}" Margin="0,4,0,0">
+                                    <FontIcon Glyph="&#xEA39;" Foreground="Red" FontSize="12" Margin="0,0,4,0"/>
+                                    <TextBlock Text="{x:Bind ViewModel.ErrorWheelLat, Mode=OneWay}" Foreground="Red" FontSize="12" TextWrapping="WrapWholeWords"/>
+                                </StackPanel>
+                            </StackPanel>
                         </Grid>
                     </StackPanel>
 
@@ -103,7 +139,13 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <NumberBox Grid.Column="0" Header="Off-Coil" Value="{x:Bind ViewModel.OffCoil, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
-                            <NumberBox Grid.Column="1" Header="Fan Eff (%)" Value="{x:Bind ViewModel.FanEff, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
+                            <StackPanel Grid.Column="1">
+                                <NumberBox Header="Fan Eff (%)" Value="{x:Bind ViewModel.FanEff, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
+                                <StackPanel Orientation="Horizontal" Visibility="{x:Bind ViewModel.VisibilityFanEff, Mode=OneWay}" Margin="0,4,0,0">
+                                    <FontIcon Glyph="&#xEA39;" Foreground="Red" FontSize="12" Margin="0,0,4,0"/>
+                                    <TextBlock Text="{x:Bind ViewModel.ErrorFanEff, Mode=OneWay}" Foreground="Red" FontSize="12" TextWrapping="WrapWholeWords"/>
+                                </StackPanel>
+                            </StackPanel>
                         </Grid>
                         <Grid ColumnSpacing="12">
                             <Grid.ColumnDefinitions>

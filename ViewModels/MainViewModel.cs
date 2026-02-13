@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Microsoft.UI.Xaml;
 using DOASCalculatorWinUI;
 
 namespace DOASCalculatorWinUI.ViewModels
@@ -24,78 +25,106 @@ namespace DOASCalculatorWinUI.ViewModels
 
         public bool IsSi => !IsIp;
 
+        // Errors
+        private Dictionary<string, string> _errors = new Dictionary<string, string>();
+        
+        public string GetError(string propertyName) => _errors.ContainsKey(propertyName) ? _errors[propertyName] : "";
+        public bool HasError(string propertyName) => _errors.ContainsKey(propertyName);
+
         // Inputs
         private double _altitude = 0;
-        public double Altitude { get => _altitude; set { if (SetProperty(ref _altitude, Clamp(value, -500, 5000))) Calculate(); } }
+        public double Altitude { get => _altitude; set { if (SetProperty(ref _altitude, value)) ValidateAndCalculate(); } }
 
         private double _oaFlow = 1000;
-        public double OaFlow { get => _oaFlow; set { if (SetProperty(ref _oaFlow, Clamp(value, 0, 100000))) Calculate(); } }
+        public double OaFlow { get => _oaFlow; set { if (SetProperty(ref _oaFlow, value)) ValidateAndCalculate(); } }
 
         private double _oaDb = 35.0;
-        public double OaDb { get => _oaDb; set { if (SetProperty(ref _oaDb, Clamp(value, -50, 60))) Calculate(); } }
+        public double OaDb { get => _oaDb; set { if (SetProperty(ref _oaDb, value)) ValidateAndCalculate(); } }
 
         private double _oaWb = 28.0;
-        public double OaWb { get => _oaWb; set { if (SetProperty(ref _oaWb, Clamp(value, -50, _oaDb))) Calculate(); } }
+        public double OaWb { get => _oaWb; set { if (SetProperty(ref _oaWb, value)) ValidateAndCalculate(); } }
 
         private double _eaFlow = 800;
-        public double EaFlow { get => _eaFlow; set { if (SetProperty(ref _eaFlow, Clamp(value, 0, 100000))) Calculate(); } }
+        public double EaFlow { get => _eaFlow; set { if (SetProperty(ref _eaFlow, value)) ValidateAndCalculate(); } }
 
         private double _eaDb = 24.0;
-        public double EaDb { get => _eaDb; set { if (SetProperty(ref _eaDb, Clamp(value, 10, 40))) Calculate(); } }
+        public double EaDb { get => _eaDb; set { if (SetProperty(ref _eaDb, value)) ValidateAndCalculate(); } }
 
         private double _eaRh = 50.0;
-        public double EaRh { get => _eaRh; set { if (SetProperty(ref _eaRh, Clamp(value, 0, 100))) Calculate(); } }
+        public double EaRh { get => _eaRh; set { if (SetProperty(ref _eaRh, value)) ValidateAndCalculate(); } }
 
         private bool _wheelEnabled = true;
-        public bool WheelEnabled { get => _wheelEnabled; set { if (SetProperty(ref _wheelEnabled, value)) Calculate(); } }
+        public bool WheelEnabled { get => _wheelEnabled; set { if (SetProperty(ref _wheelEnabled, value)) ValidateAndCalculate(); } }
 
         private double _wheelSens = 75;
-        public double WheelSens { get => _wheelSens; set { if (SetProperty(ref _wheelSens, Clamp(value, 0, 100))) Calculate(); } }
+        public double WheelSens { get => _wheelSens; set { if (SetProperty(ref _wheelSens, value)) ValidateAndCalculate(); } }
 
         private double _wheelLat = 70;
-        public double WheelLat { get => _wheelLat; set { if (SetProperty(ref _wheelLat, Clamp(value, 0, 100))) Calculate(); } }
+        public double WheelLat { get => _wheelLat; set { if (SetProperty(ref _wheelLat, value)) ValidateAndCalculate(); } }
 
         private bool _dwEnabled = false;
-        public bool DwEnabled { get => _dwEnabled; set { if (SetProperty(ref _dwEnabled, value)) Calculate(); } }
+        public bool DwEnabled { get => _dwEnabled; set { if (SetProperty(ref _dwEnabled, value)) ValidateAndCalculate(); } }
 
         private double _dwEff = 65;
-        public double DwEff { get => _dwEff; set { if (SetProperty(ref _dwEff, Clamp(value, 0, 100))) Calculate(); } }
+        public double DwEff { get => _dwEff; set { if (SetProperty(ref _dwEff, value)) ValidateAndCalculate(); } }
 
         private bool _hpEnabled = false;
-        public bool HpEnabled { get => _hpEnabled; set { if (SetProperty(ref _hpEnabled, value)) Calculate(); } }
+        public bool HpEnabled { get => _hpEnabled; set { if (SetProperty(ref _hpEnabled, value)) ValidateAndCalculate(); } }
 
         private double _hpEff = 45;
-        public double HpEff { get => _hpEff; set { if (SetProperty(ref _hpEff, Clamp(value, 0, 100))) Calculate(); } }
+        public double HpEff { get => _hpEff; set { if (SetProperty(ref _hpEff, value)) ValidateAndCalculate(); } }
 
         private double _offCoil = 12.0;
-        public double OffCoil { get => _offCoil; set { if (SetProperty(ref _offCoil, Clamp(value, 4, 30))) Calculate(); } }
+        public double OffCoil { get => _offCoil; set { if (SetProperty(ref _offCoil, value)) ValidateAndCalculate(); } }
 
         private double _fanEff = 60;
-        public double FanEff { get => _fanEff; set { if (SetProperty(ref _fanEff, Clamp(value, 10, 95))) Calculate(); } }
+        public double FanEff { get => _fanEff; set { if (SetProperty(ref _fanEff, value)) ValidateAndCalculate(); } }
 
         private bool _reheatEnabled = false;
-        public bool ReheatEnabled { get => _reheatEnabled; set { if (SetProperty(ref _reheatEnabled, value)) Calculate(); } }
+        public bool ReheatEnabled { get => _reheatEnabled; set { if (SetProperty(ref _reheatEnabled, value)) ValidateAndCalculate(); } }
 
         private double _supplyTemp = 20.0;
-        public double SupplyTemp { get => _supplyTemp; set { if (SetProperty(ref _supplyTemp, Clamp(value, 10, 50))) Calculate(); } }
+        public double SupplyTemp { get => _supplyTemp; set { if (SetProperty(ref _supplyTemp, value)) ValidateAndCalculate(); } }
 
         private double _supEsp = 500;
-        public double SupEsp { get => _supEsp; set { if (SetProperty(ref _supEsp, Clamp(value, 0, 5000))) Calculate(); } }
+        public double SupEsp { get => _supEsp; set { if (SetProperty(ref _supEsp, value)) ValidateAndCalculate(); } }
 
         private double _extEsp = 500;
-        public double ExtEsp { get => _extEsp; set { if (SetProperty(ref _extEsp, Clamp(value, 0, 5000))) Calculate(); } }
+        public double ExtEsp { get => _extEsp; set { if (SetProperty(ref _extEsp, value)) ValidateAndCalculate(); } }
 
         private double _pdDamper = 50;
-        public double PdDamper { get => _pdDamper; set { if (SetProperty(ref _pdDamper, Clamp(value, 0, 1000))) Calculate(); } }
+        public double PdDamper { get => _pdDamper; set { if (SetProperty(ref _pdDamper, value)) ValidateAndCalculate(); } }
 
         private double _pdFilterPre = 100;
-        public double PdFilterPre { get => _pdFilterPre; set { if (SetProperty(ref _pdFilterPre, Clamp(value, 0, 1000))) Calculate(); } }
+        public double PdFilterPre { get => _pdFilterPre; set { if (SetProperty(ref _pdFilterPre, value)) ValidateAndCalculate(); } }
 
         private double _pdFilterMain = 250;
-        public double PdFilterMain { get => _pdFilterMain; set { if (SetProperty(ref _pdFilterMain, Clamp(value, 0, 2000))) Calculate(); } }
+        public double PdFilterMain { get => _pdFilterMain; set { if (SetProperty(ref _pdFilterMain, value)) ValidateAndCalculate(); } }
 
         private double _pdCoil = 250;
-        public double PdCoil { get => _pdCoil; set { if (SetProperty(ref _pdCoil, Clamp(value, 0, 2000))) Calculate(); } }
+        public double PdCoil { get => _pdCoil; set { if (SetProperty(ref _pdCoil, value)) ValidateAndCalculate(); } }
+
+        // Error message helpers for XAML
+        public string ErrorAltitude => GetError(nameof(Altitude));
+        public Visibility VisibilityAltitude => HasError(nameof(Altitude)) ? Visibility.Visible : Visibility.Collapsed;
+
+        public string ErrorOaFlow => GetError(nameof(OaFlow));
+        public Visibility VisibilityOaFlow => HasError(nameof(OaFlow)) ? Visibility.Visible : Visibility.Collapsed;
+
+        public string ErrorOaDb => GetError(nameof(OaDb));
+        public Visibility VisibilityOaDb => HasError(nameof(OaDb)) ? Visibility.Visible : Visibility.Collapsed;
+
+        public string ErrorOaWb => GetError(nameof(OaWb));
+        public Visibility VisibilityOaWb => HasError(nameof(OaWb)) ? Visibility.Visible : Visibility.Collapsed;
+
+        public string ErrorWheelSens => GetError(nameof(WheelSens));
+        public Visibility VisibilityWheelSens => HasError(nameof(WheelSens)) ? Visibility.Visible : Visibility.Collapsed;
+
+        public string ErrorWheelLat => GetError(nameof(WheelLat));
+        public Visibility VisibilityWheelLat => HasError(nameof(WheelLat)) ? Visibility.Visible : Visibility.Collapsed;
+
+        public string ErrorFanEff => GetError(nameof(FanEff));
+        public Visibility VisibilityFanEff => HasError(nameof(FanEff)) ? Visibility.Visible : Visibility.Collapsed;
 
         // Results
         private string _resCooling = "0.0 kW";
@@ -123,14 +152,56 @@ namespace DOASCalculatorWinUI.ViewModels
 
         public MainViewModel()
         {
-            Calculate();
+            ValidateAndCalculate();
         }
 
-        private double Clamp(double value, double min, double max)
+        private void ValidateAndCalculate()
         {
-            if (value < min) return min;
-            if (value > max) return max;
-            return value;
+            _errors.Clear();
+
+            // Validate Altitude: -500m to 5000m
+            double altSi = IsIp ? Units.FtToM(Altitude) : Altitude;
+            if (altSi < -500 || altSi > 5000) 
+                _errors[nameof(Altitude)] = IsIp ? "Altitude must be between -1640 and 16400 ft" : "Altitude must be between -500 and 5000 m";
+
+            // Validate OA Flow: > 0
+            double flowSi = IsIp ? Units.CfmToLps(OaFlow) : OaFlow;
+            if (flowSi <= 0) _errors[nameof(OaFlow)] = "Flow must be greater than zero";
+
+            // Validate OA DB: -50 to 60 C
+            double dbSi = IsIp ? Units.FtoC(OaDb) : OaDb;
+            if (dbSi < -50 || dbSi > 60)
+                _errors[nameof(OaDb)] = IsIp ? "Temp must be between -58 and 140 °F" : "Temp must be between -50 and 60 °C";
+
+            // Validate OA WB: <= OA DB
+            double wbSi = IsIp ? Units.FtoC(OaWb) : OaWb;
+            if (wbSi > dbSi) _errors[nameof(OaWb)] = "Wet bulb cannot be higher than Dry Bulb";
+
+            // Validate Efficiencies
+            if (WheelSens < 0 || WheelSens > 100) _errors[nameof(WheelSens)] = "Efficiency must be between 0 and 100%";
+            if (WheelLat < 0 || WheelLat > 100) _errors[nameof(WheelLat)] = "Efficiency must be between 0 and 100%";
+            if (FanEff < 10 || FanEff > 95) _errors[nameof(FanEff)] = "Fan efficiency typically 10-95%";
+
+            // Refresh UI Error Bindings
+            OnPropertyChanged(nameof(ErrorAltitude));
+            OnPropertyChanged(nameof(VisibilityAltitude));
+            OnPropertyChanged(nameof(ErrorOaFlow));
+            OnPropertyChanged(nameof(VisibilityOaFlow));
+            OnPropertyChanged(nameof(ErrorOaDb));
+            OnPropertyChanged(nameof(VisibilityOaDb));
+            OnPropertyChanged(nameof(ErrorOaWb));
+            OnPropertyChanged(nameof(VisibilityOaWb));
+            OnPropertyChanged(nameof(ErrorWheelSens));
+            OnPropertyChanged(nameof(VisibilityWheelSens));
+            OnPropertyChanged(nameof(ErrorWheelLat));
+            OnPropertyChanged(nameof(VisibilityWheelLat));
+            OnPropertyChanged(nameof(ErrorFanEff));
+            OnPropertyChanged(nameof(VisibilityFanEff));
+
+            if (_errors.Count == 0)
+            {
+                Calculate();
+            }
         }
 
         public void Calculate()
