@@ -1,0 +1,74 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <!-- Gradients for depth -->
+        <linearGradient id="box_top" x1="256" y1="120" x2="256" y2="240" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#E2E8F0"/>
+            <stop offset="100%" stop-color="#CBD5E1"/>
+        </linearGradient>
+        <linearGradient id="box_left" x1="100" y1="200" x2="256" y2="400" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#94A3B8"/>
+            <stop offset="100%" stop-color="#64748B"/>
+        </linearGradient>
+        <linearGradient id="box_right" x1="412" y1="200" x2="256" y2="400" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#64748B"/>
+            <stop offset="100%" stop-color="#475569"/>
+        </linearGradient>
+
+        <!-- Air Stream Gradients -->
+        <linearGradient id="supply_flow" x1="120" y1="180" x2="400" y2="340" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#F97316"/> <!-- Hot Outdoor Air -->
+            <stop offset="100%" stop-color="#0EA5E9"/> <!-- Cold Supply Air -->
+        </linearGradient>
+        <linearGradient id="exhaust_flow" x1="120" y1="340" x2="400" y2="180" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#38BDF8"/> <!-- Building Return Air -->
+            <stop offset="100%" stop-color="#EA580C"/> <!-- Hot Exhaust Air -->
+        </linearGradient>
+
+        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="20" stdDeviation="20" flood-opacity="0.4"/>
+        </filter>
+    </defs>
+
+    <!-- Background Base -->
+    <rect width="512" height="512" rx="128" fill="#F8FAFC"/>
+
+    <!-- Isometric Rectangular Equipment Casing -->
+    <g filter="url(#shadow)">
+        <!-- Top Face -->
+        <path d="M256 120 L440 200 L256 280 L72 200 Z" fill="url(#box_top)"/>
+        <!-- Front Left Face -->
+        <path d="M72 200 L256 280 L256 420 L72 340 Z" fill="url(#box_left)"/>
+        <!-- Front Right Face -->
+        <path d="M256 280 L440 200 L440 340 L256 420 Z" fill="url(#box_right)"/>
+        
+        <!-- Subtle panel lines -->
+        <path d="M256 280 V420" stroke="white" stroke-width="2" stroke-opacity="0.3"/>
+    </g>
+
+    <!-- Cross-Flow Streams (Isometric perspective) -->
+    
+    <!-- Supply Air Path (OA to SA) -->
+    <path d="M40 160 Q 150 160, 256 300 T 480 380" 
+          stroke="url(#supply_flow)" stroke-width="28" stroke-linecap="round" 
+          fill="none" opacity="0.9"/>
+    <!-- Arrowhead for Supply -->
+    <path d="M465 365 L485 385 L460 395" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Exhaust Air Path (RA to EA) -->
+    <path d="M40 380 Q 150 380, 256 240 T 480 160" 
+          stroke="url(#exhaust_flow)" stroke-width="28" stroke-linecap="round" 
+          fill="none" opacity="0.9"/>
+    <!-- Arrowhead for Exhaust -->
+    <path d="M465 175 L485 155 L460 145" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Internal Component Indication (Recovery Wheels) -->
+    <g opacity="0.6">
+        <!-- Main Recovery Zone -->
+        <ellipse cx="256" cy="270" rx="60" ry="35" stroke="white" stroke-width="4" stroke-dasharray="10 5"/>
+        <ellipse cx="256" cy="270" rx="30" ry="18" fill="white" fill-opacity="0.2"/>
+    </g>
+
+    <!-- Glow particles -->
+    <circle cx="120" cy="160" r="6" fill="#F97316" fill-opacity="0.8"/>
+    <circle cx="400" cy="340" r="6" fill="#0EA5E9" fill-opacity="0.8"/>
+</svg>
