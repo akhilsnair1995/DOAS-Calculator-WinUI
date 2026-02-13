@@ -19,6 +19,10 @@ namespace DOASCalculatorWinUI
             this.InitializeComponent();
             this.Title = "DOAS Sizing Calculator (WinUI 3)";
             ViewModel.OnCalculationError += ShowErrorDialog;
+
+#if DEBUG
+            EngineTests.RunAllTests();
+#endif
         }
 
         private async void ShowErrorDialog(string message)
