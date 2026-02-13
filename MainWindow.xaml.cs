@@ -29,7 +29,6 @@ namespace DOASCalculatorWinUI
 
             try {
                 var inputs = new SystemInputs {
-                    IsHeatingMode = TogHeating.IsOn,
                     Altitude = _isIp ? Units.FtToM(NumAltitude.Value) : NumAltitude.Value,
                     OaFlow = _isIp ? Units.CfmToLps(NumOaFlow.Value) : NumOaFlow.Value,
                     OaDb = _isIp ? Units.FtoC(NumOaDb.Value) : NumOaDb.Value,

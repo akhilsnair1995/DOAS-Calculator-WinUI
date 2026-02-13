@@ -44,7 +44,7 @@ namespace DOASCalculatorWinUI
             // 2. Pre-Cool / Pre-Heat Recovery (Sensible only or Wrap-around)
             double qRecoveredSensible = 0;
 
-            if (input.DoubleWheelEnabled && !input.IsHeatingMode)
+            if (input.DoubleWheelEnabled)
             {
                 double driving = current.T - input.OffCoilTemp;
                 if (driving > 0)
@@ -63,7 +63,7 @@ namespace DOASCalculatorWinUI
                 }
             }
 
-            if (input.HpEnabled && !input.IsHeatingMode)
+            if (input.HpEnabled)
             {
                 double driving = current.T - input.OffCoilTemp;
                 if (driving > 0)
@@ -82,34 +82,18 @@ namespace DOASCalculatorWinUI
                 }
             }
 
-            // 3. Main Coil
-            if (input.IsHeatingMode)
-            {
-                // Heating Mode
-                if (input.OffCoilTemp > current.T)
-                {
-                    AirState next = new AirState(input.OffCoilTemp, current.W, ptIdx.ToString());
-                    res.TotalHeating = mDot * 1.006 * (next.T - current.T);
-                    res.Steps.Add(new ProcessStep { Component = "Heating Coil", Entering = current, Leaving = next });
-                    res.ChartPoints[next.Name] = next;
-                    current = next; ptIdx++;
-                }
-            }
-            else
-            {
-                // Cooling Mode
-                double offSatW = Psychrometrics.GetHumidityRatio(Psychrometrics.GetSatVapPres(input.OffCoilTemp));
-                double offW = (current.W > offSatW) ? offSatW : current.W;
-                AirState coilOut = new AirState(input.OffCoilTemp, offW, ptIdx.ToString());
-                
-                res.TotalCooling = mDot * (current.Enthalpy - coilOut.Enthalpy);
-                res.SensibleCooling = mDot * 1.006 * (current.T - coilOut.T);
-                res.LatentCooling = Math.Max(0, res.TotalCooling - res.SensibleCooling);
+            // 3. Main Cooling Coil
+            double offSatW = Psychrometrics.GetHumidityRatio(Psychrometrics.GetSatVapPres(input.OffCoilTemp));
+            double offW = (current.W > offSatW) ? offSatW : current.W;
+            AirState coilOut = new AirState(input.OffCoilTemp, offW, ptIdx.ToString());
+            
+            res.TotalCooling = mDot * (current.Enthalpy - coilOut.Enthalpy);
+            res.SensibleCooling = mDot * 1.006 * (current.T - coilOut.T);
+            res.LatentCooling = Math.Max(0, res.TotalCooling - res.SensibleCooling);
 
-                res.Steps.Add(new ProcessStep { Component = "Cooling Coil", Entering = current, Leaving = coilOut });
-                res.ChartPoints[coilOut.Name] = coilOut;
-                current = coilOut; ptIdx++;
-            }
+            res.Steps.Add(new ProcessStep { Component = "Cooling Coil", Entering = current, Leaving = coilOut });
+            res.ChartPoints[coilOut.Name] = coilOut;
+            current = coilOut; ptIdx++;
 
             // 4. Recovery Reheat (Scientist's First Law Correction)
             if (qRecoveredSensible > 0)

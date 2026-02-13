@@ -30,7 +30,6 @@
 
                     <StackPanel Spacing="8">
                         <TextBlock Text="Project Context" Style="{StaticResource BodyStrongTextBlockStyle}"/>
-                        <ToggleSwitch x:Name="TogHeating" Header="Heating Mode" IsOn="False" Toggled="Input_Changed"/>
                         <NumberBox x:Name="NumAltitude" Header="Altitude (m)" Value="0" ValueChanged="Input_Changed" HorizontalAlignment="Stretch"/>
                     </StackPanel>
 

@@ -26,7 +26,6 @@ namespace DOASCalculatorWinUI
 
     public class SystemInputs
     {
-        public bool IsHeatingMode { get; set; }
         public double OaFlow { get; set; }
         public double OaDb { get; set; }
         public double OaWb { get; set; }
@@ -93,7 +92,6 @@ namespace DOASCalculatorWinUI
 
     public class ProjectData
     {
-        public bool IsHeatingMode { get; set; }
         public string OaFlow { get; set; } = "";
         public string OaDb { get; set; } = "";
         public string OaWb { get; set; } = "";
