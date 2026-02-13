@@ -18,6 +18,23 @@ namespace DOASCalculatorWinUI
         {
             this.InitializeComponent();
             this.Title = "DOAS Sizing Calculator (WinUI 3)";
+            ViewModel.OnCalculationError += ShowErrorDialog;
+        }
+
+        private async void ShowErrorDialog(string message)
+        {
+            var root = this.Content as FrameworkElement;
+            if (root?.XamlRoot != null)
+            {
+                var dialog = new ContentDialog
+                {
+                    Title = "Calculation Error",
+                    Content = $"System logic could not be processed. Please verify all inputs (Efficiency and Flow must be non-zero).\n\nDetails: {message}",
+                    CloseButtonText = "OK",
+                    XamlRoot = root.XamlRoot
+                };
+                await dialog.ShowAsync();
+            }
         }
 
         public Visibility BoolToVis(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
@@ -78,6 +95,7 @@ namespace DOASCalculatorWinUI
 
     public class MainViewModel : ViewModelBase
     {
+        public event Action<string>? OnCalculationError;
         private bool _isIp = false;
         public bool IsIp { get => _isIp; set { if (SetProperty(ref _isIp, value)) { OnPropertyChanged(nameof(IsSi)); UpdateUnitLabels(); ConvertUnits(value); ValidateAndCalculate(); } } }
         public bool IsSi => !IsIp;
@@ -219,7 +237,10 @@ namespace DOASCalculatorWinUI
                 ResFanPower = $"{results.TotalFanPowerKW:F2} kW"; 
                 ResFanBreakdown = $"Sup Fan: {results.SupFanPowerKW:F2} kW | Ext Fan: {results.ExtFanPowerKW:F2} kW";
                 Schedule.Clear(); foreach (var s in results.Steps) Schedule.Add(new ScheduleItem { Component = s.Component, Entering = IsIp ? s.Entering.ToIpString() : s.Entering.ToString(), Leaving = IsIp ? s.Leaving.ToIpString() : s.Leaving.ToString() });
-            } catch { }
+            } 
+            catch (Exception ex) {
+                OnCalculationError?.Invoke(ex.Message);
+            }
         }
 
         private double GetAshraeMinEER(double btu, bool gas) { if (btu < 65000) return 12.0; if (btu < 135000) return gas ? 11.0 : 11.2; if (btu < 240000) return gas ? 10.8 : 11.0; return gas ? 9.8 : 10.0; }

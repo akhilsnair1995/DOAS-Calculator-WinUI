@@ -146,20 +146,28 @@ namespace DOASCalculatorWinUI
             res.ExtInternalPd = input.PdDamper + input.PdFilterPre + wheelPd; 
 
             // 7. Fan Power Calculation
-            // Using local density at the fan location for accurate absorbed power
             double supTsp = input.SupOaEsp + res.SupInternalPd;
-            double supFanDensity = Psychrometrics.GetDensity(current.T); // Draw-thru fan (after reheat)
+            double supFanDensity = Psychrometrics.GetDensity(current.T); 
             double qSupLocal = mDot / supFanDensity; 
             res.SupFanPowerKW = (qSupLocal * supTsp) / (input.FanEff / 100.0) / 1000.0;
 
+            // 8. Supply Fan Heat Gain (Architect's Correction)
+            // Most of the fan power (absorbed) converts to heat in the airstream
+            if (res.SupFanPowerKW > 0)
+            {
+                double dT_fan = res.SupFanPowerKW / (mDot * 1.006);
+                AirState next = new AirState(current.T + dT_fan, current.W, "SA");
+                res.Steps.Add(new ProcessStep { Component = "Supply Fan Heat", Entering = current, Leaving = next });
+                res.ChartPoints["SA"] = next;
+                current = next;
+            }
+
             double extTsp = input.ExtEaEsp + res.ExtInternalPd;
-            // Exhaust fan is typically after the wheel in the exhaust stream
-            // Simplification: use EA density
             double extFanDensity = Psychrometrics.GetDensity(input.EaDb);
             double qExtLocal = (input.EaFlow / 1000.0) * (Psychrometrics.GetDensity(input.EaDb) / extFanDensity); 
             res.ExtFanPowerKW = (qExtLocal * extTsp) / (input.FanEff / 100.0) / 1000.0;
 
-            // 8. Motor Selection
+            // 9. Motor Selection
             // Using a more standard 15% margin for motor sizing
             res.SupMotorKW = SelectMotor(res.SupFanPowerKW * 1.15); 
             res.ExtMotorKW = SelectMotor(res.ExtFanPowerKW * 1.15);
