@@ -33,7 +33,6 @@ namespace DOASCalculatorWinUI
         public double Altitude { get; set; }
 
         public bool WheelEnabled { get; set; }
-        public bool EconomizerEnabled { get; set; }
         public double WheelSens { get; set; }
         public double WheelLat { get; set; }
         public double EaFlow { get; set; }
@@ -94,7 +93,6 @@ namespace DOASCalculatorWinUI
         public string OaWb { get; set; } = "";
         public string Altitude { get; set; } = "";
         public bool WheelEnabled { get; set; }
-        public bool EconomizerEnabled { get; set; }
         public string WheelSens { get; set; } = "";
         public string WheelLat { get; set; } = "";
         public string EaFlow { get; set; } = "";

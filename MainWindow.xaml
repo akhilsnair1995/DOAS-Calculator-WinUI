@@ -72,7 +72,6 @@
                             <NumberBox x:Name="NumWheelSens" Grid.Column="0" Header="Sensible Eff (%)" Value="75" ValueChanged="Input_Changed" HorizontalAlignment="Stretch"/>
                             <NumberBox x:Name="NumWheelLat" Grid.Column="1" Header="Latent Eff (%)" Value="70" ValueChanged="Input_Changed" HorizontalAlignment="Stretch"/>
                         </Grid>
-                        <CheckBox x:Name="ChkEconomizer" Content="Enthalpy Economizer" IsChecked="True" Click="Input_Changed"/>
                     </StackPanel>
 
                     <StackPanel Spacing="8">

@@ -40,7 +40,6 @@ namespace DOASCalculatorWinUI
                     WheelEnabled = TogWheel.IsOn,
                     WheelSens = NumWheelSens.Value,
                     WheelLat = NumWheelLat.Value,
-                    EconomizerEnabled = ChkEconomizer.IsChecked == true,
                     
                     DoubleWheelEnabled = TogDw.IsOn,
                     DwSens = NumDwEff.Value,

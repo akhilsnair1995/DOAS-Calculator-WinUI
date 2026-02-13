@@ -28,31 +28,15 @@ namespace DOASCalculatorWinUI
             // 1. Enthalpy Wheel
             if (input.WheelEnabled)
             {
-                bool bypass = false;
-                if (input.EconomizerEnabled)
-                {
-                    // Cooling mode: Bypass if OA is already better (lower enthalpy) than EA
-                    if (!input.IsHeatingMode && current.Enthalpy < eaState.Enthalpy) bypass = true;
-                    // Heating mode: Bypass if OA is warmer than EA
-                    if (input.IsHeatingMode && current.T > eaState.T) bypass = true;
-                }
-
-                double tOut = current.T;
-                double wOut = current.W;
-
-                if (!bypass)
-                {
-                    tOut = current.T - (input.WheelSens / 100.0) * (current.T - input.EaDb);
-                    wOut = current.W - (input.WheelLat / 100.0) * (current.W - eaW);
-                    
-                    // Physics Clamp (Saturation)
-                    double wsat = Psychrometrics.GetHumidityRatio(Psychrometrics.GetSatVapPres(tOut));
-                    if (wOut > wsat) wOut = wsat;
-                }
+                double tOut = current.T - (input.WheelSens / 100.0) * (current.T - input.EaDb);
+                double wOut = current.W - (input.WheelLat / 100.0) * (current.W - eaW);
+                
+                // Physics Clamp (Saturation)
+                double wsat = Psychrometrics.GetHumidityRatio(Psychrometrics.GetSatVapPres(tOut));
+                if (wOut > wsat) wOut = wsat;
 
                 AirState next = new AirState(tOut, wOut, ptIdx.ToString());
-                string name = bypass ? "Enthalpy Wheel (Bypassed)" : "Enthalpy Wheel";
-                res.Steps.Add(new ProcessStep { Component = name, Entering = current, Leaving = next });
+                res.Steps.Add(new ProcessStep { Component = "Enthalpy Wheel", Entering = current, Leaving = next });
                 res.ChartPoints[next.Name] = next;
                 current = next; ptIdx++;
             }
