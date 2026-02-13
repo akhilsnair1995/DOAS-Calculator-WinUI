@@ -124,10 +124,10 @@ namespace DOASCalculatorWinUI
 
         // Results
         private string _resCooling = "0.0 kW"; public string ResCooling { get => _resCooling; set => SetProperty(ref _resCooling, value); }
-        private string _resCoolingBreakdown = "S: 0.0 | L: 0.0"; public string ResCoolingBreakdown { get => _resCoolingBreakdown; set => SetProperty(ref _resCoolingBreakdown, value); }
+        private string _resCoolingBreakdown = "Sensible: 0.0 | Latent: 0.0"; public string ResCoolingBreakdown { get => _resCoolingBreakdown; set => SetProperty(ref _resCoolingBreakdown, value); }
         private string _resReheat = "0.0 kW"; public string ResReheat { get => _resReheat; set => SetProperty(ref _resReheat, value); }
         private string _resFanPower = "0.0 kW"; public string ResFanPower { get => _resFanPower; set => SetProperty(ref _resFanPower, value); }
-        private string _resFanBreakdown = "S: 0.0 | E: 0.0"; public string ResFanBreakdown { get => _resFanBreakdown; set => SetProperty(ref _resFanBreakdown, value); }
+        private string _resFanBreakdown = "Sup Fan: 0.0 | Ext Fan: 0.0"; public string ResFanBreakdown { get => _resFanBreakdown; set => SetProperty(ref _resFanBreakdown, value); }
         private string _resDxUnitPower = ""; public string ResDxUnitPower { get => _resDxUnitPower; set => SetProperty(ref _resDxUnitPower, value); }
 
         public ObservableCollection<ScheduleItem> Schedule { get; } = new ObservableCollection<ScheduleItem>();
@@ -197,9 +197,27 @@ namespace DOASCalculatorWinUI
                 var results = DOASEngine.Process(inputs);
                 if (AutoAshrae && MainCoilType == CoilType.Dx) { double eer = GetAshraeMinEER(Units.KwToBtuH(results.TotalCooling), ReheatEnabled && ReheatType == ReheatSource.Gas); _dxEfficiency = IsIp ? eer : Units.EerToCop(eer); OnPropertyChanged(nameof(DxEfficiency)); }
                 if (MainCoilType == CoilType.Dx) { var dx = DxCalculator.GetAshraePerformance(results.TotalCooling); ResDxUnitPower = $"DX Unit: {dx.ElectricalPowerKw:F1} kW (ASHRAE EER: {dx.MinEer})"; } else ResDxUnitPower = "";
-                if (IsIp) { ResCooling = $"{Units.KwToMbh(results.TotalCooling):F1} MBH"; string breakdown = $"S: {Units.KwToMbh(results.SensibleCooling):F1} MBH | L: {Units.KwToMbh(results.LatentCooling):F1} MBH"; if (IsMainWater) breakdown += $" | {results.MainCoilWaterFlow * 15.85:F1} GPM"; ResCoolingBreakdown = breakdown; ResReheat = $"{Units.KwToMbh(results.ReheatLoad):F1} MBH"; if (IsReheatWater) ResReheat += $" ({results.ReheatWaterFlow * 15.85:F1} GPM)"; else if (IsReheatGas) ResReheat += $" ({results.GasConsumption * 35.31:F1} SCFH)"; }
-                else { ResCooling = $"{results.TotalCooling:F1} kW"; string breakdown = $"S: {results.SensibleCooling:F1} kW | L: {results.LatentCooling:F1} kW"; if (IsMainWater) breakdown += $" | {results.MainCoilWaterFlow:F2} L/s"; else breakdown += $" | {(results.TotalCooling / (IsIp ? Units.EerToCop(DxEfficiency) : DxEfficiency)):F1} kW Elec"; ResCoolingBreakdown = breakdown; ResReheat = $"{results.ReheatLoad:F1} kW"; if (IsReheatWater) ResReheat += $" ({results.ReheatWaterFlow:F2} L/s)"; else if (IsReheatGas) ResReheat += $" ({results.GasConsumption:F2} m3/h)"; }
-                ResFanPower = $"{results.TotalFanPowerKW:F2} kW"; ResFanBreakdown = $"S: {results.SupFanPowerKW:F2} | E: {results.ExtFanPowerKW:F2} kW";
+                if (IsIp) { 
+                    ResCooling = $"{Units.KwToMbh(results.TotalCooling):F1} MBH"; 
+                    string breakdown = $"Sensible: {Units.KwToMbh(results.SensibleCooling):F1} MBH | Latent: {Units.KwToMbh(results.LatentCooling):F1} MBH"; 
+                    if (IsMainWater) breakdown += $" | Flow: {results.MainCoilWaterFlow * 15.85:F1} GPM"; 
+                    ResCoolingBreakdown = breakdown; 
+                    ResReheat = $"{Units.KwToMbh(results.ReheatLoad):F1} MBH"; 
+                    if (IsReheatWater) ResReheat += $" (Water Flow: {results.ReheatWaterFlow * 15.85:F1} GPM)"; 
+                    else if (IsReheatGas) ResReheat += $" (Gas Consumption: {results.GasConsumption * 35.31:F1} SCFH)"; 
+                }
+                else { 
+                    ResCooling = $"{results.TotalCooling:F1} kW"; 
+                    string breakdown = $"Sensible: {results.SensibleCooling:F1} kW | Latent: {results.LatentCooling:F1} kW"; 
+                    if (IsMainWater) breakdown += $" | Flow: {results.MainCoilWaterFlow:F2} L/s"; 
+                    else breakdown += $" | Electrical: {(results.TotalCooling / (IsIp ? Units.EerToCop(DxEfficiency) : DxEfficiency)):F1} kW"; 
+                    ResCoolingBreakdown = breakdown; 
+                    ResReheat = $"{results.ReheatLoad:F1} kW"; 
+                    if (IsReheatWater) ResReheat += $" (Water Flow: {results.ReheatWaterFlow:F2} L/s)"; 
+                    else if (IsReheatGas) ResReheat += $" (Gas Consumption: {results.GasConsumption:F2} m3/h)"; 
+                }
+                ResFanPower = $"{results.TotalFanPowerKW:F2} kW"; 
+                ResFanBreakdown = $"Sup Fan: {results.SupFanPowerKW:F2} kW | Ext Fan: {results.ExtFanPowerKW:F2} kW";
                 Schedule.Clear(); foreach (var s in results.Steps) Schedule.Add(new ScheduleItem { Component = s.Component, Entering = IsIp ? s.Entering.ToIpString() : s.Entering.ToString(), Leaving = IsIp ? s.Leaving.ToIpString() : s.Leaving.ToString() });
             } catch { }
         }
