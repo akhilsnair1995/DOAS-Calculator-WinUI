@@ -123,24 +123,37 @@
                 </StackPanel>
             </StackPanel>
 
-            <ScrollViewer Grid.Row="1" Margin="0,20,0,0">
-                <ItemsControl ItemsSource="{x:Bind ViewModel.Schedule, Mode=OneWay}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="local:ScheduleItem">
-                            <Grid Padding="10,5" BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="180"/>
-                                    <ColumnDefinition Width="180"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="{x:Bind Component, Mode=OneWay}" FontWeight="SemiBold"/>
-                                <TextBlock Text="{x:Bind Entering, Mode=OneWay}" Grid.Column="1" FontFamily="Consolas"/>
-                                <TextBlock Text="{x:Bind Leaving, Mode=OneWay}" Grid.Column="2" FontFamily="Consolas"/>
-                            </Grid>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+            <StackPanel Grid.Row="1" Margin="0,20,0,0">
+                <TextBlock Text="Psychrometric Process Schedule" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,0,0,10"/>
+                <Grid Padding="10,8" Background="{ThemeResource LayerFillColorDefaultBrush}" BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4,4,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="180"/>
+                        <ColumnDefinition Width="180"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Component / Step" FontWeight="Bold" Style="{StaticResource CaptionTextBlockStyle}"/>
+                    <TextBlock Text="Entering State" Grid.Column="1" FontWeight="Bold" Style="{StaticResource CaptionTextBlockStyle}"/>
+                    <TextBlock Text="Leaving State" Grid.Column="2" FontWeight="Bold" Style="{StaticResource CaptionTextBlockStyle}"/>
+                </Grid>
+                <ScrollViewer MaxHeight="400" BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}" BorderThickness="1,0,1,1" CornerRadius="0,0,4,4">
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.Schedule, Mode=OneWay}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="local:ScheduleItem">
+                                <Grid Padding="10,5" BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="180"/>
+                                        <ColumnDefinition Width="180"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{x:Bind Component, Mode=OneWay}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{x:Bind Entering, Mode=OneWay}" Grid.Column="1" FontFamily="Consolas" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{x:Bind Leaving, Mode=OneWay}" Grid.Column="2" FontFamily="Consolas" VerticalAlignment="Center"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </StackPanel>
         </Grid>
     </Grid>
 </Window>
