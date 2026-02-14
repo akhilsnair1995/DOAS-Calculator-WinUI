@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -95,6 +96,8 @@ namespace DOASCalculatorWinUI
         public string Component { get; set; } = "";
         public string Entering { get; set; } = "";
         public string Leaving { get; set; } = "";
+        public AirStream Stream { get; set; }
+        public string Color { get; set; } = "Black";
     }
 
     public class MainViewModel : ViewModelBase
@@ -247,12 +250,37 @@ namespace DOASCalculatorWinUI
                 ResFanBreakdown = $"Sup Fan: {results.SupFanPowerKW:F2} kW (Elec: {results.SupElectricalPowerKW:F2} kW) | Ext Fan: {results.ExtFanPowerKW:F2} kW (Elec: {results.ExtElectricalPowerKW:F2} kW)";
                 
                 Schedule.Clear(); 
-                foreach (var s in results.Steps) 
+                
+                // Add Supply Stream Header
+                Schedule.Add(new ScheduleItem { Component = "--- SUPPLY STREAM ---", Color = "Gray" });
+                
+                // Add Supply Stream
+                foreach (var s in results.Steps.Where(x => x.Stream == AirStream.Supply)) 
                 {
                     Schedule.Add(new ScheduleItem { 
                         Component = s.Component, 
                         Entering = IsIp ? s.Entering.ToIpString() : s.Entering.ToString(), 
-                        Leaving = IsIp ? s.Leaving.ToIpString() : s.Leaving.ToString() 
+                        Leaving = IsIp ? s.Leaving.ToIpString() : s.Leaving.ToString(),
+                        Stream = s.Stream,
+                        Color = "SteelBlue"
+                    });
+                }
+
+                // Add spacing
+                Schedule.Add(new ScheduleItem { Component = "" });
+
+                // Add Exhaust Stream Header
+                Schedule.Add(new ScheduleItem { Component = "--- EXHAUST STREAM ---", Color = "Gray" });
+
+                // Add Exhaust Stream
+                foreach (var s in results.Steps.Where(x => x.Stream == AirStream.Exhaust)) 
+                {
+                    Schedule.Add(new ScheduleItem { 
+                        Component = s.Component, 
+                        Entering = IsIp ? s.Entering.ToIpString() : s.Entering.ToString(), 
+                        Leaving = IsIp ? s.Leaving.ToIpString() : s.Leaving.ToString(),
+                        Stream = s.Stream,
+                        Color = "DarkOrange"
                     });
                 }
             } 

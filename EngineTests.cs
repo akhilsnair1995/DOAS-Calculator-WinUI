@@ -55,7 +55,8 @@ namespace DOASCalculatorWinUI
             var results = DOASEngine.Process(inputs);
 
             Debug.Assert(results.TotalCooling > 0, "Cooling load should be positive");
-            Debug.Assert(results.Steps.Any(s => s.Component == "Enthalpy Wheel"), "Wheel step missing");
+            Debug.Assert(results.Steps.Any(s => s.Component == "Enthalpy Wheel (OA)"), "Wheel OA step missing");
+            Debug.Assert(results.Steps.Any(s => s.Component == "Enthalpy Wheel (EA)"), "Wheel EA step missing");
             Debug.Assert(results.Steps.Any(s => s.Component == "Cooling Coil"), "Coil step missing");
             
             Console.WriteLine("PASSED");

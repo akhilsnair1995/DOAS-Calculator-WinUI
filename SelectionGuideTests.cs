@@ -44,7 +44,7 @@ namespace DOASCalculatorWinUI
 
             var res = DOASEngine.Process(inputs);
 
-            var ewStep = res.Steps.FirstOrDefault(s => s.Component == "Enthalpy Wheel");
+            var ewStep = res.Steps.FirstOrDefault(s => s.Component == "Enthalpy Wheel (OA)");
             var hpPreStep = res.Steps.FirstOrDefault(s => s.Component == "HP Pre-Cool");
             var coilStep = res.Steps.FirstOrDefault(s => s.Component == "Cooling Coil");
             var sa = res.ChartPoints["SA"];

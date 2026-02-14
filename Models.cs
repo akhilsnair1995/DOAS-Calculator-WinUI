@@ -26,6 +26,7 @@ namespace DOASCalculatorWinUI
 
     public enum CoilType { Dx, Water }
     public enum ReheatSource { Electric, HotWater, Gas }
+    public enum AirStream { Supply, Exhaust }
 
     public class SystemInputs
     {
@@ -77,6 +78,7 @@ namespace DOASCalculatorWinUI
         public string Component { get; set; } = "";
         public AirState Entering { get; set; } = new AirState(0,0);
         public AirState Leaving { get; set; } = new AirState(0,0);
+        public AirStream Stream { get; set; } = AirStream.Supply;
         public string HighlightColorHex { get; set; } = "#000000"; 
     }
 

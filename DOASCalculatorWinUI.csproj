@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>DOASCalculatorWinUI</RootNamespace>
@@ -12,9 +12,16 @@
     <AssemblyName>DOASCalculatorWinUI</AssemblyName>
     
     <!-- Switch to Unpackaged and Self-Contained to bundle dependencies like Microsoft.ui.xaml.dll -->
-    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsPackageType>MSIX</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <ApplicationIcon>App Icon.ico</ApplicationIcon>
+    <Title>DOAS Calculator</Title>
+    <Version>3.0.0</Version>
+    <Company>Akhil S Nair</Company>
+    <Authors>Akhil S Nair</Authors>
+    <Product>DoasCalculator</Product>
+    <PackageIcon>App Icon.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,5 +35,16 @@
 
   <ItemGroup>
     <Content Include="Images\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="App Icon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\Downloads\App Icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 </Project>

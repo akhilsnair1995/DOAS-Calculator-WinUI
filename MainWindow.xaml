@@ -153,9 +153,9 @@
                                         <ColumnDefinition Width="180"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{x:Bind Component, Mode=OneWay}" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{x:Bind Entering, Mode=OneWay}" Grid.Column="1" FontFamily="Consolas" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{x:Bind Leaving, Mode=OneWay}" Grid.Column="2" FontFamily="Consolas" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{x:Bind Component, Mode=OneWay}" Foreground="{x:Bind Color, Mode=OneWay}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{x:Bind Entering, Mode=OneWay}" Foreground="{x:Bind Color, Mode=OneWay}" Grid.Column="1" FontFamily="Consolas" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{x:Bind Leaving, Mode=OneWay}" Foreground="{x:Bind Color, Mode=OneWay}" Grid.Column="2" FontFamily="Consolas" VerticalAlignment="Center"/>
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>

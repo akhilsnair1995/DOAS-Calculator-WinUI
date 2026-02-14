@@ -41,7 +41,7 @@ namespace DOASCalculatorWinUI
                 {
                     double dtRa = qShrw / (mDotRa * cp);
                     AirState raMid = new AirState(currentRa.T - dtRa, currentRa.W, "RA_Exh_Out");
-                    res.Steps.Add(new ProcessStep { Component = "Sensible Wheel (Exh)", Entering = currentRa, Leaving = raMid });
+                    res.Steps.Add(new ProcessStep { Component = "Sensible Wheel (Exh)", Entering = currentRa, Leaving = raMid, Stream = AirStream.Exhaust });
                     currentRa = raMid;
                 }
             }
@@ -50,22 +50,29 @@ namespace DOASCalculatorWinUI
             if (input.WheelEnabled && mDotRa > 0)
             {
                 double cMin = Math.Min(mDotOa, mDotRa);
-                
-                // Sensible effectiveness on Temperature
-                double qEhrwSens = (input.WheelSens / 100.0) * (cMin * cp) * (currentOa.T - currentRa.T);
-                double tOut = currentOa.T - qEhrwSens / (mDotOa * cp);
-                
-                // Latent effectiveness on Humidity Ratio
-                double dW = (input.WheelLat / 100.0) * (Math.Min(mDotOa, mDotRa) / mDotOa) * (currentOa.W - currentRa.W);
-                double wOut = currentOa.W - dW;
+                AirState entryOa = currentOa;
+                AirState entryRa = currentRa;
 
-                // Physics Clamp
-                double wsat = Psychrometrics.GetHumidityRatio(Psychrometrics.GetSatVapPres(tOut));
-                if (wOut > wsat) wOut = wsat;
+                // 3a. OA Side Calculation
+                double qEhrwSens = (input.WheelSens / 100.0) * (cMin * cp) * (entryOa.T - entryRa.T);
+                double tOutOa = entryOa.T - qEhrwSens / (mDotOa * cp);
+                
+                double dW_Oa = (input.WheelLat / 100.0) * (cMin / mDotOa) * (entryOa.W - entryRa.W);
+                double wOutOa = entryOa.W - dW_Oa;
 
-                AirState nextOa = new AirState(tOut, wOut, "EW_Out");
-                res.Steps.Add(new ProcessStep { Component = "Enthalpy Wheel", Entering = currentOa, Leaving = nextOa });
-                currentOa = nextOa;
+                // Physics Clamp for OA (cannot exceed saturation)
+                double wsatOa = Psychrometrics.GetHumidityRatio(Psychrometrics.GetSatVapPres(tOutOa));
+                if (wOutOa > wsatOa) wOutOa = wsatOa;
+
+                currentOa = new AirState(tOutOa, wOutOa, "EW_Out_OA");
+                res.Steps.Add(new ProcessStep { Component = "Enthalpy Wheel (OA)", Entering = entryOa, Leaving = currentOa, Stream = AirStream.Supply });
+
+                // 3b. EA Side Calculation (Energy/Mass Balance)
+                double tOutEa = entryRa.T + qEhrwSens / (mDotRa * cp);
+                double wOutEa = entryRa.W + (mDotOa / mDotRa) * (entryOa.W - currentOa.W);
+                
+                currentRa = new AirState(tOutEa, wOutEa, "EW_Out_EA");
+                res.Steps.Add(new ProcessStep { Component = "Enthalpy Wheel (EA)", Entering = entryRa, Leaving = currentRa, Stream = AirStream.Exhaust });
             }
 
             // 4. Heat Pipe Pre-Cool (Standard Wrap-around)
@@ -78,7 +85,7 @@ namespace DOASCalculatorWinUI
                     qHp = (input.HpEff / 100.0) * mDotOa * cp * driving;
                     double dt = qHp / (mDotOa * cp);
                     AirState nextOa = new AirState(currentOa.T - dt, currentOa.W, "HP_Pre");
-                    res.Steps.Add(new ProcessStep { Component = "HP Pre-Cool", Entering = currentOa, Leaving = nextOa });
+                    res.Steps.Add(new ProcessStep { Component = "HP Pre-Cool", Entering = currentOa, Leaving = nextOa, Stream = AirStream.Supply });
                     currentOa = nextOa;
                 }
             }
@@ -92,7 +99,7 @@ namespace DOASCalculatorWinUI
             res.SensibleCooling = mDotOa * cp * (currentOa.T - coilOut.T);
             res.LatentCooling = Math.Max(0, res.TotalCooling - res.SensibleCooling);
 
-            res.Steps.Add(new ProcessStep { Component = "Cooling Coil", Entering = currentOa, Leaving = coilOut });
+            res.Steps.Add(new ProcessStep { Component = "Cooling Coil", Entering = currentOa, Leaving = coilOut, Stream = AirStream.Supply });
             
             if (input.MainCoilType == CoilType.Water && input.MainCoilDeltaT > 0)
                 res.MainCoilWaterFlow = res.TotalCooling / (4.186 * input.MainCoilDeltaT);
@@ -104,7 +111,7 @@ namespace DOASCalculatorWinUI
             {
                 double dt = qHp / (mDotOa * cp);
                 AirState nextOa = new AirState(currentOa.T + dt, currentOa.W, "HP_Reheat");
-                res.Steps.Add(new ProcessStep { Component = "HP Reheat", Entering = currentOa, Leaving = nextOa });
+                res.Steps.Add(new ProcessStep { Component = "HP Reheat", Entering = currentOa, Leaving = nextOa, Stream = AirStream.Supply });
                 currentOa = nextOa;
             }
 
@@ -112,7 +119,7 @@ namespace DOASCalculatorWinUI
             {
                 double dtSa = qShrw / (mDotOa * cp);
                 AirState saFinal = new AirState(currentOa.T + dtSa, currentOa.W, "SW_Reheat");
-                res.Steps.Add(new ProcessStep { Component = "Sensible Wheel (Re)", Entering = currentOa, Leaving = saFinal });
+                res.Steps.Add(new ProcessStep { Component = "Sensible Wheel (Re)", Entering = currentOa, Leaving = saFinal, Stream = AirStream.Supply });
                 currentOa = saFinal;
             }
 
@@ -121,7 +128,7 @@ namespace DOASCalculatorWinUI
             {
                 res.ReheatLoad = mDotOa * cp * (input.TargetSupplyTemp - currentOa.T);
                 AirState next = new AirState(input.TargetSupplyTemp, currentOa.W, "SA_Reheat");
-                res.Steps.Add(new ProcessStep { Component = "Supplementary Reheat", Entering = currentOa, Leaving = next });
+                res.Steps.Add(new ProcessStep { Component = "Supplementary Reheat", Entering = currentOa, Leaving = next, Stream = AirStream.Supply });
                 
                 if (input.ReheatType == ReheatSource.HotWater)
                 {

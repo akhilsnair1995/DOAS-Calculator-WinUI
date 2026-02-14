@@ -45,7 +45,7 @@ namespace DOASCalculatorWinUI
 
             var res = DOASEngine.Process(inputs);
 
-            var ewStep = res.Steps.FirstOrDefault(s => s.Component == "Enthalpy Wheel");
+            var ewStep = res.Steps.FirstOrDefault(s => s.Component == "Enthalpy Wheel (OA)");
             var hpStep = res.Steps.FirstOrDefault(s => s.Component == "HP Pre-Cool");
             var coilStep = res.Steps.FirstOrDefault(s => s.Component == "Cooling Coil");
             var sa = res.ChartPoints["SA"];
@@ -90,7 +90,7 @@ namespace DOASCalculatorWinUI
 
             var res = DOASEngine.Process(inputs);
 
-            var ewStep = res.Steps.FirstOrDefault(s => s.Component == "Enthalpy Wheel");
+            var ewStep = res.Steps.FirstOrDefault(s => s.Component == "Enthalpy Wheel (OA)");
             var sa = res.ChartPoints["SA"];
 
             Console.WriteLine("Results for P4-FAHU-01:");
