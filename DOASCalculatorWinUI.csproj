@@ -29,14 +29,15 @@
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
     <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
     <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
-    <GenerateTestArtifacts>True</GenerateTestArtifacts>
-    <GenerateAppxPackageOnBuild>True</GenerateAppxPackageOnBuild>
-    <AppxPackageBuildMode>StoreUpload</AppxPackageBuildMode>
-    <UapAppxPackageBuildMode>StoreUpload</UapAppxPackageBuildMode>
     <AppxBundle>Always</AppxBundle>
     <AppxBundlePlatforms>x86|x64|arm64</AppxBundlePlatforms>
-    <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest">
+      <SubType>Designer</SubType>
+    </AppxManifest>
+  </ItemGroup>
 
   <PropertyGroup Condition="'$(Platform)'=='x64'">
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
