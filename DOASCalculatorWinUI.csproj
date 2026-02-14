@@ -30,6 +30,8 @@
     <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
     <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
     <GenerateTestArtifacts>True</GenerateTestArtifacts>
+    <GenerateAppxPackageOnBuild>True</GenerateAppxPackageOnBuild>
+    <AppxPackageBuildMode>StoreUpload</AppxPackageBuildMode>
     <UapAppxPackageBuildMode>StoreUpload</UapAppxPackageBuildMode>
     <AppxBundle>Always</AppxBundle>
     <AppxBundlePlatforms>x86|x64|arm64</AppxBundlePlatforms>
