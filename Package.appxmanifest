@@ -9,7 +9,7 @@
   <Identity
     Name="AkhilSNair.33552964D0FD8"
     Publisher="CN=377F62A6-C9BB-472D-811A-87EEB0103F2F"
-    Version="4.0.1.0" />
+    Version="4.0.3.0" />
 
   <Properties>
     <DisplayName>DOAS Calculator</DisplayName>
