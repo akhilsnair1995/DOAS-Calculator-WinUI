@@ -18,6 +18,7 @@
             <MenuBarItem Title="File">
                 <MenuFlyoutItem Text="Open" Click="Open_Click"/>
                 <MenuFlyoutItem Text="Save" Click="Save_Click"/>
+                <MenuFlyoutItem Text="Export to PDF" Click="ExportPdf_Click"/>
                 <MenuFlyoutItem Text="Exit" Click="Exit_Click"/>
             </MenuBarItem>
             <MenuBarItem Title="Units">

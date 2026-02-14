@@ -75,6 +75,44 @@ namespace DOASCalculatorWinUI
             if (file != null) { var data = ViewModel.GetProjectData(); string json = System.Text.Json.JsonSerializer.Serialize(data, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }); await Windows.Storage.FileIO.WriteTextAsync(file, json); }
         }
 
+        private async void ExportPdf_Click(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel.LastResults == null)
+            {
+                ShowErrorDialog("Please calculate the system results before exporting to PDF.");
+                return;
+            }
+
+            var picker = new Windows.Storage.Pickers.FileSavePicker();
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+            picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
+            picker.FileTypeChoices.Add("PDF Document", new List<string>() { ".pdf" });
+            picker.SuggestedFileName = "DOAS Design Report";
+
+            var file = await picker.PickSaveFileAsync();
+            if (file != null)
+            {
+                try
+                {
+                    PdfReportGenerator.Generate(file.Path, ViewModel, ViewModel.LastResults);
+                    
+                    var successDialog = new ContentDialog
+                    {
+                        Title = "Export Successful",
+                        Content = $"Report saved to: {file.Path}",
+                        CloseButtonText = "OK",
+                        XamlRoot = (this.Content as FrameworkElement)?.XamlRoot
+                    };
+                    await successDialog.ShowAsync();
+                }
+                catch (Exception ex)
+                {
+                    ShowErrorDialog($"Failed to generate PDF: {ex.Message}");
+                }
+            }
+        }
+
         private void Exit_Click(object sender, RoutedEventArgs e) => Application.Current.Exit();
     }
 
@@ -159,6 +197,8 @@ namespace DOASCalculatorWinUI
 
         public ObservableCollection<ScheduleItem> Schedule { get; } = new ObservableCollection<ScheduleItem>();
 
+        public SystemResults? LastResults { get; private set; }
+
         // Visibility Flags
         public bool IsErrorAlt => HasError(nameof(Altitude));
         public bool IsErrorOaFlow => HasError(nameof(OaFlow));
@@ -224,6 +264,7 @@ namespace DOASCalculatorWinUI
             try {
                 var inputs = new SystemInputs { Altitude = IsIp ? Units.FtToM(Altitude) : Altitude, OaFlow = IsIp ? Units.CfmToLps(OaFlow) : OaFlow, OaDb = IsIp ? Units.FtoC(OaDb) : OaDb, OaWb = IsIp ? Units.FtoC(OaWb) : OaWb, EaFlow = IsIp ? Units.CfmToLps(EaFlow) : EaFlow, EaDb = IsIp ? Units.FtoC(EaDb) : EaDb, EaRh = EaRh, WheelEnabled = WheelEnabled, WheelSens = WheelSens, WheelLat = WheelLat, DoubleWheelEnabled = DwEnabled, DwSens = DwEff, HpEnabled = HpEnabled, HpEff = HpEff, OffCoilTemp = IsIp ? Units.FtoC(OffCoil) : OffCoil, MainCoilType = MainCoilType, MainCoilDeltaT = IsIp ? MainCoilDeltaT / 1.8 : MainCoilDeltaT, ReheatEnabled = ReheatEnabled, ReheatType = ReheatType, TargetSupplyTemp = IsIp ? Units.FtoC(SupplyTemp) : SupplyTemp, HwEwt = IsIp ? Units.FtoC(HwEwt) : HwEwt, HwLwt = IsIp ? Units.FtoC(HwLwt) : HwLwt, GasEfficiency = GasEfficiency, SupOaEsp = IsIp ? Units.InWgToPa(SupEsp) : SupEsp, ExtEaEsp = IsIp ? Units.InWgToPa(ExtEsp) : ExtEsp, FanEff = FanEff, MotorEff = MotorEff, DriveEff = DriveEff, PdDamper = IsIp ? Units.InWgToPa(PdDamper) : PdDamper, PdFilterPre = IsIp ? Units.InWgToPa(PdFilterPre) : PdFilterPre, PdFilterMain = IsIp ? Units.InWgToPa(PdFilterMain) : PdFilterMain, PdCoil = IsIp ? Units.InWgToPa(PdCoil) : PdCoil };
                 var results = DOASEngine.Process(inputs);
+                LastResults = results;
                 if (AutoAshrae && MainCoilType == CoilType.Dx) { double eer = GetAshraeMinEER(Units.KwToBtuH(results.TotalCooling), ReheatEnabled && ReheatType == ReheatSource.Gas); _dxEfficiency = IsIp ? eer : Units.EerToCop(eer); OnPropertyChanged(nameof(DxEfficiency)); }
                 if (MainCoilType == CoilType.Dx) { var dx = DxCalculator.GetAshraePerformance(results.TotalCooling); ResDxUnitPower = $"DX Unit: {dx.ElectricalPowerKw:F1} kW (ASHRAE EER: {dx.MinEer})"; } else ResDxUnitPower = "";
                 
