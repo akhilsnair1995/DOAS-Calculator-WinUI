@@ -35,8 +35,8 @@ namespace DOASCalculatorWinUI
 
                         row.ConstantItem(100).Column(col =>
                         {
-                            col.Item().Text("One Man Buzz").SemiBold().FontSize(12).AlignRight();
-                            col.Item().Text("DOAS Calculator v3.0").FontSize(8).AlignRight();
+                            col.Item().Text("Precision MEP").SemiBold().FontSize(12).AlignRight();
+                            col.Item().Text("DOAS Calculator v4.0").FontSize(8).AlignRight();
                         });
                     });
 
