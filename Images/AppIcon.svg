@@ -1,0 +1,27 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background Square -->
+    <rect width="256" height="256" rx="48" fill="#F3F3F3"/>
+    
+    <!-- System Casing -->
+    <rect x="40" y="80" width="176" height="96" rx="8" fill="#333333"/>
+    
+    <!-- Enthalpy Wheel (Left) -->
+    <circle cx="100" cy="128" r="36" stroke="#0078D4" stroke-width="8" stroke-dasharray="12 6"/>
+    <circle cx="100" cy="128" r="8" fill="#0078D4"/>
+    
+    <!-- Sensible Wheel (Right) -->
+    <circle cx="156" cy="128" r="36" stroke="#E81123" stroke-width="8" stroke-dasharray="12 6"/>
+    <circle cx="156" cy="128" r="8" fill="#E81123"/>
+    
+    <!-- Flow Arrows -->
+    <!-- Supply Air -->
+    <path d="M20 110H60L50 100M60 110L50 120" stroke="#0078D4" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M196 110H236L226 100M236 110L226 120" stroke="#0078D4" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Return Air -->
+    <path d="M236 146H196L206 136M196 146L206 156" stroke="#E81123" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M60 146H20L30 136M20 146L30 156" stroke="#E81123" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Label -->
+    <text x="128" y="220" text-anchor="middle" font-family="Segoe UI, sans-serif" font-weight="bold" font-size="24" fill="#333333">DOAS</text>
+</svg>

@@ -1,0 +1,87 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <!-- Sophisticated Gradients -->
+        <linearGradient id="casing_grad" x1="256" y1="100" x2="256" y2="420" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#F1F5F9"/>
+            <stop offset="100%" stop-color="#94A3B8"/>
+        </linearGradient>
+        
+        <linearGradient id="cool_stream" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#0EA5E9"/>
+            <stop offset="100%" stop-color="#38BDF8"/>
+        </linearGradient>
+        
+        <linearGradient id="warm_stream" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#F97316"/>
+            <stop offset="100%" stop-color="#FB923C"/>
+        </linearGradient>
+
+        <filter id="soft_shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="15" stdDeviation="15" flood-color="#000" flood-opacity="0.2"/>
+        </filter>
+        
+        <filter id="glow_blue" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="8" result="blur"/>
+            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+        </filter>
+    </defs>
+
+    <!-- Professional App Icon Background -->
+    <rect width="512" height="512" rx="120" fill="#F8FAFC"/>
+    <rect x="10" y="10" width="492" height="492" rx="115" stroke="#E2E8F0" stroke-width="4"/>
+
+    <!-- Isometric AHU Casing -->
+    <g filter="url(#soft_shadow)">
+        <!-- Back Hidden Faces (Subtle) -->
+        <path d="M120 220 L256 140 L392 220 L256 300 Z" fill="#E2E8F0"/>
+        
+        <!-- Main Top Face -->
+        <path d="M120 200 L256 120 L392 200 L256 280 Z" fill="url(#casing_grad)"/>
+        
+        <!-- Front Left Face -->
+        <path d="M120 200 L256 280 L256 400 L120 320 Z" fill="#64748B"/>
+        
+        <!-- Front Right Face -->
+        <path d="M256 280 L392 200 L392 320 L256 400 Z" fill="#475569"/>
+
+        <!-- Duct Connections (The 4 Ports) -->
+        <!-- Top Left Port -->
+        <path d="M140 188 L170 180 L170 210 L140 218 Z" fill="#334155"/>
+        <!-- Top Right Port -->
+        <path d="M342 180 L372 188 L372 218 L342 210 Z" fill="#334155"/>
+        <!-- Bottom Left Port -->
+        <path d="M140 308 L170 300 L170 330 L140 338 Z" fill="#334155"/>
+        <!-- Bottom Right Port -->
+        <path d="M342 300 L372 308 L372 338 L342 330 Z" fill="#334155"/>
+    </g>
+
+    <!-- The Cross-Flow Energy Exchange Visualization -->
+    
+    <!-- SUPPLY PATH (Top Left -> Bottom Right) -->
+    <!-- Hot Ambient Entering -> Cooling -> Cold Supply Exiting -->
+    <path d="M60 180 C 150 180, 200 320, 452 320" 
+          stroke="url(#warm_stream)" stroke-width="24" stroke-linecap="round" 
+          fill="none" opacity="0.8" filter="url(#glow_blue)"/>
+    <path d="M60 180 C 150 180, 200 320, 452 320" 
+          stroke="#0EA5E9" stroke-width="24" stroke-linecap="round" 
+          fill="none" opacity="0.4" stroke-dasharray="100 300" stroke-dashoffset="-150"/>
+
+    <!-- EXHAUST PATH (Bottom Left -> Top Right) -->
+    <!-- Cool RA Entering -> Heating -> Hot Exhaust Exiting -->
+    <path d="M60 320 C 150 320, 200 180, 452 180" 
+          stroke="url(#cool_stream)" stroke-width="24" stroke-linecap="round" 
+          fill="none" opacity="0.8" filter="url(#glow_blue)"/>
+    <path d="M60 320 C 150 320, 200 180, 452 180" 
+          stroke="#F97316" stroke-width="24" stroke-linecap="round" 
+          fill="none" opacity="0.4" stroke-dasharray="100 300" stroke-dashoffset="-150"/>
+
+    <!-- Recovery Wheels Indication (Internal glowing circles) -->
+    <g transform="translate(256, 260) skewY(-15)">
+        <circle cx="-30" cy="0" r="45" stroke="white" stroke-width="2" stroke-dasharray="5 5" opacity="0.5"/>
+        <circle cx="30" cy="0" r="45" stroke="white" stroke-width="2" stroke-dasharray="5 5" opacity="0.5"/>
+    </g>
+
+    <!-- Subtle Flow Arrows -->
+    <path d="M430 310 L452 320 L430 330" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M430 170 L452 180 L430 190" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
